@@ -45,7 +45,8 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Return JSON for API unauthenticated errors
+        // Return JSON for API unauthenticated errors; redirect web routes to the
+        // appropriate login page based on the URL prefix.
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
@@ -54,11 +55,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
 
-            // Unauthenticated admin guard requests redirect to admin login —
-            // not the default 'login' named route which belongs to the user portal.
-            if ($request->is('admin/*')) {
-                return redirect()->route('admin.login');
-            }
+            // Admin routes always go to admin login — never the user portal.
+            // This is the only web auth failure that matters since user auth
+            // is wallet/Sanctum-token-based and never uses session middleware.
+            return redirect()->route('admin.login');
         });
 
         // Return JSON for API validation errors (belt-and-suspenders for non-FormRequest paths)
@@ -83,4 +83,3 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->create();
-    
