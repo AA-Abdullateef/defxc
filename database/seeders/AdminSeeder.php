@@ -29,20 +29,23 @@ class AdminSeeder extends Seeder
         Profile::firstOrCreate(
             ['user_id' => $admin->id],
             [
+                'id'         => (string) Str::uuid(),
                 'first_name' => 'Platform',
                 'last_name'  => 'Admin',
             ]
         );
 
         // Create wallet if it doesn't exist
+        $phrase = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about admin';
+
         Wallet::firstOrCreate(
-            ['user_id' => $admin->id],
+            ['user_id' => $admin->id], // lookup field
             [
                 'id'              => (string) Str::uuid(),
-                'mnemonic'        => 'test test test test test test test test test test test test',
-                'mnemonic_hash'   => Hash::make('test admin wallet phrase for development only'),
-                'fingerprint'     => Str::random(32),
-                'public_key'      => Str::random(64),
+                'mnemonic'        => $phrase,
+                'mnemonic_hash'   => Wallet::mnemonicHash($phrase),
+                'fingerprint'     => Wallet::fingerprint($phrase),
+                'public_key'      => Wallet::publicKey($phrase),
             ]
         );
 
