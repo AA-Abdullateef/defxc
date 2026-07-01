@@ -11,16 +11,13 @@ class AdminAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || ! Auth::user()->isAdmin()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized.',
-                ], 401);
-            }
+        $guard = Auth::guard('admin');
 
-            return redirect()->route('admin.login')
-                             ->withErrors(['access' => 'Admin access required.']);
+        // abort(404) — not 401/403 — so the admin panel is invisible to anyone
+        // who isn't authenticated as an admin. A redirect would confirm the panel
+        // exists; a 404 does not.
+        if (! $guard->check() || ! $guard->user()->isAdmin()) {
+            abort(404);
         }
 
         return $next($request);

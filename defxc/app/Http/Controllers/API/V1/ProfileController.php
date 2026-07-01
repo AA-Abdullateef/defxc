@@ -144,8 +144,14 @@ class ProfileController extends Controller
 
         $file = $request->file('profile_photo');
 
-        $filename = $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('profile', $filename, 'public');
+        // Use $file->extension() — derived from the actual MIME type via finfo,
+        // not from the client-supplied filename (getClientOriginalExtension is untrusted).
+        $filename = $user->id . '_' . time() . '.' . $file->extension();
+
+        // storeAs() returns the stored path relative to the disk root.
+        // We use that return value directly so the DB record always matches
+        // the actual file location, even if path construction logic ever changes.
+        $path = $file->storeAs('profile', $filename, 'public');
 
         if ($user->photo) {
             Storage::disk('public')->delete($user->photo->img);
@@ -155,7 +161,7 @@ class ProfileController extends Controller
         $photo = ProfilePhoto::create([
             'id'      => (string) Str::uuid(),
             'user_id' => $user->id,
-            'img'     => 'profile/' . $filename,
+            'img'     => $path,
         ]);
 
         return $this->success('Photo uploaded.', ['url' => $photo->url()]);

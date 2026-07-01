@@ -39,8 +39,15 @@ return [
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
+            'driver'   => 'session',
             'provider' => 'users',
+        ],
+
+        // Isolated admin guard — session stored separately from the user web guard.
+        // Admin auth never touches the web guard and vice versa.
+        'admin' => [
+            'driver'   => 'session',
+            'provider' => 'admins',
         ],
     ],
 
@@ -64,13 +71,14 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            'model'  => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // Scoped to the same users table; the guard separation is what matters.
+        'admins' => [
+            'driver' => 'eloquent',
+            'model'  => env('AUTH_MODEL', User::class),
+        ],
     ],
 
     /*

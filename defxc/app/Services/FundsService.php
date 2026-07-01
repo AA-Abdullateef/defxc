@@ -72,12 +72,15 @@ class FundsService
      */
     public function uploadDepositProof(Transaction $transaction, UploadedFile $file): DepositPhoto
     {
-        $filename = md5(uniqid('', true)) . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('deposits', $filename, 'public');
+        // Str::uuid() — consistent with the rest of the codebase; collision-resistant.
+        // $file->extension() — MIME-derived, not client-filename-derived (safe).
+        $filename = (string) Str::uuid() . '.' . $file->extension();
+
+        $path = $file->storeAs('deposits', $filename, 'public');
 
         $photo = DepositPhoto::create([
             'transaction_id' => $transaction->id,
-            'img'            => 'deposits/' . $filename,
+            'img'            => $path,
         ]);
 
         AuditLog::record(

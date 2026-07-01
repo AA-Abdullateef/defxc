@@ -8,8 +8,17 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    private function guard()
+    {
+        return Auth::guard('admin');
+    }
+
     public function showLogin()
     {
+        if ($this->guard()->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return view('admin.auth.login');
     }
 
@@ -22,8 +31,8 @@ class AuthController extends Controller
 
         $field = filter_var($credentials['user'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        $attempt = Auth::attempt([
-            $field    => strtolower($credentials['user']),
+        $attempt = $this->guard()->attempt([
+            $field     => strtolower($credentials['user']),
             'password' => $credentials['password'],
         ], $request->boolean('remember'));
 
@@ -31,8 +40,10 @@ class AuthController extends Controller
             return back()->withErrors(['user' => 'Invalid credentials.'])->withInput();
         }
 
-        if (! Auth::user()->isAdmin()) {
-            Auth::logout();
+        // Verify admin flag — log out of admin guard immediately if not, so the
+        // session is never left in a half-authenticated state.
+        if (! $this->guard()->user()->isAdmin()) {
+            $this->guard()->logout();
             return back()->withErrors(['user' => 'Access denied.']);
         }
 
@@ -43,7 +54,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        $this->guard()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

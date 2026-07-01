@@ -53,6 +53,12 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => 'Unauthenticated.',
                 ], 401);
             }
+
+            // Unauthenticated admin guard requests redirect to admin login —
+            // not the default 'login' named route which belongs to the user portal.
+            if ($request->is('admin/*')) {
+                return redirect()->route('admin.login');
+            }
         });
 
         // Return JSON for API validation errors (belt-and-suspenders for non-FormRequest paths)
@@ -77,3 +83,4 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->create();
+    

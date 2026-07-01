@@ -22,23 +22,30 @@ Route::view('/referrals', 'user.referrals')->name('user.referrals.index');
 Route::view('/wallets', 'user.wallets')->name('user.wallets.index');
 Route::view('/card-requests', 'user.card_requests')->name('user.card-requests.index');
 
+// ── User Auth (inactive — wallet is the only user entry point) ───────────────
+// Blade files remain in resources/views/user/auth/ for reference or future use.
+// Route::view('/login',           'user.auth.login')->name('user.login');
+// Route::view('/register',        'user.auth.register')->name('user.register');
+// Route::view('/forgot-password', 'user.auth.forgot_password')->name('user.forgot-password');
+
+// Root and fallback login — both go to wallet setup since user auth is wallet-only.
 Route::get('/', fn () => redirect()->route('wallet.view.generate'));
-Route::get('/login', fn () => redirect()->route('admin.login'))->name('login');
+Route::get('/login', fn () => redirect()->route('wallet.view.generate'))->name('login');
 
 // ── Admin Auth ────────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    Route::middleware('guest')->group(function () {
+    Route::middleware('guest:admin')->group(function () {
         Route::get('login',  [Admin\AuthController::class, 'showLogin'])->name('login');
         Route::post('login', [Admin\AuthController::class, 'login'])->name('login.submit');
     });
 
     Route::post('logout', [Admin\AuthController::class, 'logout'])
-        ->middleware('auth')
+        ->middleware('auth:admin')
         ->name('logout');
 
     // ── Admin Portal ─────────────────────────────────────────────────────────
-    Route::middleware(['auth', 'admin'])->group(function () {
+    Route::middleware(['auth:admin', 'admin'])->group(function () {
 
         // Dashboard
         Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');

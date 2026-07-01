@@ -47,33 +47,17 @@ class CardRequestController extends Controller
         $imgOne = null;
 
         if ($request->hasFile('img_one')) {
-            $file = $request->file('img_one');
-
-            $filename = $wallet->id.'_1_'.time().'.'.$file->getClientOriginalExtension();
-
-            $file->storeAs(
-                'card-requests',
-                $filename,
-                'public'
-            );
-
-            $imgOne = 'card-requests/'.$filename;
+            $file     = $request->file('img_one');
+            $filename = $wallet->id . '_1_' . time() . '.' . $file->extension();
+            $imgOne   = $file->storeAs('card-requests', $filename, 'public');
         }
 
         $imgTwo = null;
 
         if ($request->hasFile('img_two')) {
-            $file = $request->file('img_two');
-
-            $filename = $wallet->id.'_2_'.time().'.'.$file->getClientOriginalExtension();
-
-            $file->storeAs(
-                'card-requests',
-                $filename,
-                'public'
-            );
-
-            $imgTwo = 'card-requests/'.$filename;
+            $file     = $request->file('img_two');
+            $filename = $wallet->id . '_2_' . time() . '.' . $file->extension();
+            $imgTwo   = $file->storeAs('card-requests', $filename, 'public');
         }
 
         $cardRequest = CardRequest::create([
