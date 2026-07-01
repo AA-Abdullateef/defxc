@@ -1,0 +1,1770 @@
+{
+    "info":  {
+                 "name":  "DEFXC API v1",
+                 "_postman_id":  "defxc-api-v1-collection",
+                 "description":  "DEFXC Financial Platform API - wallet-first refactor.\n\n## Quick Start\n1. Generate/import a wallet mnemonic.\n2. Use the returned wallet token to call Register Profile.\n3. Paste the email OTP into {{otp}} and run Verify OTP.\n4. Financial routes remain blocked until profile completion and email verification.\n\n## Auth Model\n- Wallet mnemonic/fingerprint is the primary identity.\n- Email/username/password login is backup/recovery only.\n- Admin actions are handled through Blade admin routes, not API routes.\n\n## Storage\n- Wallets store mnemonic_hash, fingerprint, and public_key.\n- Plaintext mnemonics are never stored.\n- Transactions remain linked to user_id.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "auth":  {
+                 "type":  "bearer",
+                 "bearer":  [
+                                {
+                                    "key":  "token",
+                                    "value":  "{{token}}",
+                                    "type":  "string"
+                                }
+                            ]
+             },
+    "item":  [
+                 {
+                     "name":  "00 - Reference Data",
+                     "item":  [
+                                  {
+                                      "name":  "Countries",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/countries",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "countries"
+                                                                           ]
+                                                              },
+                                                      "description":  "Public list of countries for register-profile."
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Methods",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/methods",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "methods"
+                                                                           ]
+                                                              },
+                                                      "description":  "Public list of funding methods with active submethods."
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Submethods",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/submethods?method_id={{method_id}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "submethods"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "method_id",
+                                                                                    "value":  "{{method_id}}",
+                                                                                    "description":  "Optional method UUID filter",
+                                                                                    "disabled":  true
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Public list of active submethods. Optionally filter by method_id."
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "01 Â· Auth",
+                     "item":  [
+                                  {
+                                      "name":  "Register Profile",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/register-profile",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "register-profile"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"username\": \"testuser\",\n  \"email\": \"{{user_email}}\",\n  \"country_id\": \"{{country_id}}\",\n  \"referrer_id\": null,\n  \"phone\": \"+2348000000000\",\n  \"password\": \"{{user_password}}\",\n  \"password_confirmation\": \"{{user_password}}\"\n}"
+                                                               },
+                                                      "description":  "Complete profile registration after wallet verification/import. Requires a wallet bearer token. Sends a 6-digit OTP to email."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\u0027success true\u0027, () =\u003e pm.expect(res.success).to.be.true);",
+                                                                                    "if (res.data?.user?.id) {",
+                                                                                    "  pm.environment.set(\"user_id\", res.data.user.id);",
+                                                                                    "  pm.environment.set(\"user_email\", res.data.user.email);",
+                                                                                    "  if (res.data.token) pm.environment.set(\"token\", res.data.token);",
+                                                                                    "  console.log(\"Profile registered:\", res.data.user.email);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Verify OTP (Email)",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/verify-otp",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "verify-otp"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}"
+                                                               },
+                                                      "description":  "Verify the 6-digit registration OTP. Paste the OTP from your email into the `otp` environment variable first."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\u0027has token\u0027, () =\u003e pm.expect(res.data).to.have.property(\u0027token\u0027));",
+                                                                                    "if (res.data?.token) {",
+                                                                                    "  pm.environment.set(\u0027token\u0027, res.data.token);",
+                                                                                    "  pm.environment.set(\u0027user_id\u0027, res.data.user.id);",
+                                                                                    "  console.log(\u0027Token set for:\u0027, res.data.user.email);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Resend OTP",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/resend-otp",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "resend-otp"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"email\": \"{{user_email}}\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Login",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/login",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "login"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"user\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+                                                               },
+                                                      "description":  "`user` field accepts email or username."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if (res.data?.token) {",
+                                                                                    "  pm.environment.set(\u0027token\u0027, res.data.token);",
+                                                                                    "  pm.environment.set(\u0027user_id\u0027, res.data.user.id);",
+                                                                                    "  console.log(\u0027Logged in as:\u0027, res.data.user.email);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Me",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/me",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "me"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\u0027has user\u0027, () =\u003e pm.expect(pm.response.json().data).to.have.property(\u0027user\u0027));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Logout",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/logout",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "logout"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.environment.unset(\u0027token\u0027);",
+                                                                                    "console.log(\u0027Token cleared.\u0027);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "02 Â· Password Reset",
+                     "item":  [
+                                  {
+                                      "name":  "Forgot Password",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/forgot-password",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "forgot-password"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"email\": \"{{user_email}}\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Verify Reset OTP",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/verify-reset-otp",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "verify-reset-otp"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if (res.data?.reset_token) {",
+                                                                                    "  pm.environment.set(\u0027reset_token\u0027, res.data.reset_token);",
+                                                                                    "  console.log(\u0027Reset token stored.\u0027);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Reset Password",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/reset-password",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "reset-password"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"email\": \"{{user_email}}\",\n  \"reset_token\": \"{{reset_token}}\",\n  \"password\": \"NewPassword@456\",\n  \"password_confirmation\": \"NewPassword@456\"\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "03 Â· Wallet Setup (Mnemonic)",
+                     "item":  [
+                                  {
+                                      "name":  "1 â€” Generate Mnemonic",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/wallet/generate",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "wallet",
+                                                                               "generate"
+                                                                           ]
+                                                              },
+                                                      "description":  "Generates 12 BIP39 words. Write them down â€” NOT stored in DB at this step."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if (res.data?.setup_token) {",
+                                                                                    "  pm.environment.set(\u0027setup_token\u0027, res.data.setup_token);",
+                                                                                    "  console.log(\u0027Setup token stored. Mnemonic:\u0027, res.data.mnemonic);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "2 â€” Challenge",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/wallet/challenge",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "wallet",
+                                                                               "challenge"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"setup_token\": \"{{setup_token}}\"\n}"
+                                                               },
+                                                      "description":  "Returns 3 random 1-based positions to confirm."
+                                                  }
+                                  },
+                                  {
+                                      "name":  "3 - Verify \u0026 Create Wallet Identity",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/wallet/verify",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "wallet",
+                                                                               "verify"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"setup_token\": \"{{setup_token}}\",\n  \"words\": {\n    \"3\": \"word_at_position_3\",\n    \"7\": \"word_at_position_7\",\n    \"11\": \"word_at_position_11\"\n  }\n}"
+                                                               },
+                                                      "description":  "Verifies challenge words and creates only a wallet identity. No user/profile/email is generated. Stores mnemonic_hash, fingerprint, and public_key only."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027201 created\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "if (res.data?.token) {",
+                                                                                    "  pm.environment.set(\"token\", res.data.token);",
+                                                                                    "  pm.environment.set(\"wallet_id\", res.data.wallet.id);",
+                                                                                    "  console.log(\"Wallet identity created:\", res.data.wallet.fingerprint);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Import by Mnemonic",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/wallet/import",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "wallet",
+                                                                               "import"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"mnemonic\": \"word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12\"\n}"
+                                                               },
+                                                      "description":  "Primary login endpoint. Derives fingerprint/public key from mnemonic, locates wallet identity, and returns either a user session or wallet onboarding session."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "if (res.data?.token) {",
+                                                                                    "  pm.environment.set(\"token\", res.data.token);",
+                                                                                    "  if (res.data.user?.id) pm.environment.set(\"user_id\", res.data.user.id);",
+                                                                                    "  if (res.data.wallet?.id) pm.environment.set(\"wallet_id\", res.data.wallet.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Connect External Wallet",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/wallet/connect",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "wallet",
+                                                                               "connect"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"wallet\": \"metamask\",\n  \"address\": \"0x71C7656EC7ab88b098defB751B7401B5f6d8976F\",\n  \"signature\": \"0xoptional_signature\"\n}"
+                                                               },
+                                                      "description":  "Connect MetaMask, TrustWallet, etc. by address. Never submit a recovery phrase."
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "04 Â· Dashboard \u0026 Assets",
+                     "item":  [
+                                  {
+                                      "name":  "Dashboard",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/dashboard?asset_id={{asset_id}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "dashboard"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "asset_id",
+                                                                                    "value":  "{{asset_id}}",
+                                                                                    "description":  "Optional â€” filter recent transactions by asset"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  "Returns profile, all asset balances, recent transactions."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const res = pm.response.json();",
+                                                                                    "// Auto-set first asset_id for use in other requests",
+                                                                                    "const assets = res.data?.assets;",
+                                                                                    "if (assets \u0026\u0026 assets.length \u003e 0 \u0026\u0026 !pm.environment.get(\u0027asset_id\u0027)) {",
+                                                                                    "  pm.environment.set(\u0027asset_id\u0027, assets[0].id);",
+                                                                                    "  console.log(\u0027asset_id auto-set to:\u0027, assets[0].name, assets[0].id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Assets Overview",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/assets",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "assets"
+                                                                           ]
+                                                              },
+                                                      "description":  "All assets with current balances."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const res = pm.response.json();",
+                                                                                    "const assets = res.data?.assets;",
+                                                                                    "if (assets \u0026\u0026 assets.length \u003e 0) {",
+                                                                                    "  pm.environment.set(\u0027asset_id\u0027, assets[0].asset.id);",
+                                                                                    "  console.log(\u0027asset_id set to:\u0027, assets[0].asset.name, assets[0].asset.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Asset Transactions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/assets/{{asset_id}}/transactions",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "assets",
+                                                                               "{{asset_id}}",
+                                                                               "transactions"
+                                                                           ]
+                                                              },
+                                                      "description":  "Transaction history + balance for a single asset."
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Referrals",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/referrals",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "referrals"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "05 Â· Profile",
+                     "item":  [
+                                  {
+                                      "name":  "Get Profile",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/profile",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "profile"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Update Profile",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/profile",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "profile"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"email\": \"{{user_email}}\",\n  \"country_id\": \"{{country_id}}\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"+1-555-000-1234\",\n  \"gender\": \"Male\",\n  \"state\": \"CA\",\n  \"address\": \"123 Main Street\",\n  \"zip\": \"90210\",\n  \"dob\": \"1990-01-15\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Upload Photo",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/profile/photo",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "profile",
+                                                                               "photo"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "profile_photo",
+                                                                                        "type":  "file",
+                                                                                        "src":  "",
+                                                                                        "description":  "JPG/PNG max 800KB"
+                                                                                    }
+                                                                                ]
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Settings",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/settings",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "settings"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Change Password",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/password",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "password"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"old_password\": \"{{user_password}}\",\n  \"password\": \"NewPass@789\",\n  \"password_confirmation\": \"NewPass@789\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Enable 2FA",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/two-factor",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "two-factor"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"auth\": 0\n}"
+                                                               },
+                                                      "description":  "auth=0 enables 2FA immediately. Any other value sends a deactivation OTP."
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Disable 2FA â€” Request Code",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/two-factor",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "two-factor"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"auth\": 1\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Disable 2FA â€” Confirm",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/two-factor/confirm",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "two-factor",
+                                                                               "confirm"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"code\": \"{{two_factor_token}}\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Deactivate Account",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/profile",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "profile"
+                                                                           ]
+                                                              },
+                                                      "description":  "Revokes all tokens and marks account as deactivated. User row stays in DB."
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "06 Â· Transactions",
+                     "item":  [
+                                  {
+                                      "name":  "List Transactions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/transactions?per_page=15",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "transactions"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "type",
+                                                                                    "value":  "deposit",
+                                                                                    "disabled":  true,
+                                                                                    "description":  "deposit | withdrawal | transfer"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "status",
+                                                                                    "value":  "pending",
+                                                                                    "disabled":  true,
+                                                                                    "description":  "pending | completed | cancelled"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "asset_id",
+                                                                                    "value":  "{{asset_id}}",
+                                                                                    "disabled":  true
+                                                                                },
+                                                                                {
+                                                                                    "key":  "per_page",
+                                                                                    "value":  "15"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Cancel Transaction",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/transactions/{{transaction_id}}/cancel",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "transactions",
+                                                                               "{{transaction_id}}",
+                                                                               "cancel"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"status\": \"cancelled\"\n}"
+                                                               },
+                                                      "description":  "Users can only cancel their own pending transactions. Status must be \u0027cancelled\u0027."
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "07 Â· Deposits",
+                     "item":  [
+                                  {
+                                      "name":  "Deposit Options",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/deposits/options",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "deposits",
+                                                                               "options"
+                                                                           ]
+                                                              },
+                                                      "description":  "Returns assets, methods with sub-methods, and pending deposits."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const res = pm.response.json();",
+                                                                                    "const methods = res.data?.methods;",
+                                                                                    "if (methods \u0026\u0026 methods.length \u003e 0) {",
+                                                                                    "  pm.environment.set(\u0027sub_method_id\u0027, methods[0].id);",
+                                                                                    "  console.log(\u0027sub_method_id auto-set to:\u0027, methods[0].name, methods[0].id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Initiate Deposit",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/deposits",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "deposits"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"sub_method_id\": \"{{sub_method_id}}\",\n  \"amount\": 500.00\n}"
+                                                               },
+                                                      "description":  "Creates a pending deposit. One pending deposit allowed at a time."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027201 created\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "const res = pm.response.json();",
+                                                                                    "if (res.data?.transaction?.id) {",
+                                                                                    "  pm.environment.set(\u0027transaction_id\u0027, res.data.transaction.id);",
+                                                                                    "  console.log(\u0027transaction_id set:\u0027, res.data.transaction.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Show Deposit",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/deposits/{{transaction_id}}",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "deposits",
+                                                                               "{{transaction_id}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Upload Proof",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/deposits/{{transaction_id}}/proof",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "deposits",
+                                                                               "{{transaction_id}}",
+                                                                               "proof"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "deposit_photo",
+                                                                                        "type":  "file",
+                                                                                        "src":  "",
+                                                                                        "description":  "JPG/PNG max 800KB"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                      "description":  "Attach proof of payment to a pending deposit. Admin reviews and completes."
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "08 Â· Withdrawals",
+                     "item":  [
+                                  {
+                                      "name":  "Withdrawal Options",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/withdrawals/options",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "withdrawals",
+                                                                               "options"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027200 ok\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const res = pm.response.json();",
+                                                                                    "if (res.data?.methods?.length \u003e 0) {",
+                                                                                    "  pm.environment.set(\u0027sub_method_id\u0027, res.data.methods[0].id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Initiate Withdrawal (no 2FA)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/withdrawals",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "withdrawals"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"sub_method_id\": \"{{sub_method_id}}\",\n  \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n  \"amount\": 100.00\n}"
+                                                               },
+                                                      "description":  "If 2FA is off: creates withdrawal immediately. If 2FA is on: sends token and returns requires_confirmation:true."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "if (res.data?.transaction?.id) {",
+                                                                                    "  pm.environment.set(\u0027transaction_id\u0027, res.data.transaction.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Confirm Withdrawal (2FA)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/withdrawals/confirm",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "withdrawals",
+                                                                               "confirm"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"sub_method_id\": \"{{sub_method_id}}\",\n  \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n  \"amount\": 100.00,\n  \"token\": \"{{two_factor_token}}\"\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "09 Â· Transfers",
+                     "item":  [
+                                  {
+                                      "name":  "Transfer Options",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/transfers/options",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "transfers",
+                                                                               "options"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Initiate Transfer",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/transfers",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "transfers"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\"\n}"
+                                                               },
+                                                      "description":  "recipient_id is optional. If provided, creates an incoming credit for the recipient too."
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const res = pm.response.json();",
+                                                                                    "if (res.data?.transaction?.id) {",
+                                                                                    "  pm.environment.set(\u0027transaction_id\u0027, res.data.transaction.id);",
+                                                                                    "}"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Confirm Transfer (2FA)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/transfers/confirm",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "transfers",
+                                                                               "confirm"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\",\n  \"token\": \"{{two_factor_token}}\"\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "10 Â· Public",
+                     "item":  [
+                                  {
+                                      "name":  "Contact",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/contact",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "contact"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+1-555-123-4567\",\n  \"message\": \"I have a question about my account.\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Page â€” Terms",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/pages/terms",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "pages",
+                                                                               "terms"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Page â€” Privacy",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/pages/privacy",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "pages",
+                                                                               "privacy"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "11 Â· Admin Actions",
+                     "item":  [
+
+                              ]
+                 },
+                 {
+                     "name":  "12 Â· Validation Errors",
+                     "item":  [
+                                  {
+                                      "name":  "Register â€” Fails (missing fields)",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/register",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "register"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"username\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"short\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027422 validation\u0027, () =\u003e pm.response.to.have.status(422));",
+                                                                                    "const res = pm.response.json();",
+                                                                                    "pm.test(\u0027success is false\u0027, () =\u003e pm.expect(res.success).to.be.false);",
+                                                                                    "pm.test(\u0027message is Validation failed\u0027, () =\u003e pm.expect(res.message).to.equal(\u0027Validation failed.\u0027));",
+                                                                                    "pm.test(\u0027has errors\u0027, () =\u003e pm.expect(res).to.have.property(\u0027errors\u0027));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Deposit â€” Insufficient Balance",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/withdrawals",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "withdrawals"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "options":  {
+                                                                                   "raw":  {
+                                                                                               "language":  "json"
+                                                                                           }
+                                                                               },
+                                                                   "raw":  "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n  \"amount\": 99999999.00\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027422 for insufficient balance\u0027, () =\u003e pm.response.to.have.status(422));"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Me â€” Unauthenticated",
+                                      "request":  {
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{base_url}}/me",
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "me"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027401 unauthenticated\u0027, () =\u003e pm.response.to.have.status(401));",
+                                                                                    "pm.test(\u0027success is false\u0027, () =\u003e pm.expect(pm.response.json().success).to.be.false);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ]
+}
