@@ -101,6 +101,13 @@
                             Send <strong id="deposit-instructions-amount">0.00</strong> using the details below, then upload your proof of payment.
                         </p>
                         <div id="deposit-instructions-fields" class="mb-3" style="font-size:13px;"></div>
+
+                        <!-- QR code rendered here when a wallet address is present -->
+                        <div id="deposit-qr-wrapper" class="text-center my-3" style="display:none;">
+                            <p class="small text-muted mb-2">Scan to send payment</p>
+                            <div id="deposit-qr-code" class="d-inline-block p-2 border rounded bg-white"></div>
+                            <p class="small text-muted mt-2" id="deposit-qr-address" style="word-break:break-all; font-size:11px;"></p>
+                        </div>
                         <div id="deposit-instructions-notes" class="small text-muted" style="display:none;"></div>
                     </div>
                 </div>

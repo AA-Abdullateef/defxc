@@ -207,7 +207,8 @@ async function resumeDeposit(transactionId) {
         console.error('Resume deposit fetch failure:', error);
     }
 }
-
+console.log(depositMethodsData);
+console.log(selectedSubMethod);
 function renderDepositInstructions(amount, subMethod) {
     document.getElementById('deposit-instructions-amount').innerText = amount;
 
@@ -241,6 +242,29 @@ function renderDepositInstructions(amount, subMethod) {
             </div>
         `;
     });
+
+    // Generate a QR code for the wallet address if one is present.
+    // Rendered client-side — the address never leaves the browser.
+    const qrWrapper = document.getElementById('deposit-qr-wrapper');
+    const qrContainer = document.getElementById('deposit-qr-code');
+    const qrAddressLabel = document.getElementById('deposit-qr-address');
+    const walletAddress = subMethod.wallet_address || subMethod.address || null;
+
+    qrContainer.innerHTML = '';
+    qrWrapper.style.display = 'none';
+
+    if (walletAddress) {
+        new QRCode(qrContainer, {
+            text: walletAddress,
+            width: 180,
+            height: 180,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M,
+        });
+        qrAddressLabel.textContent = walletAddress;
+        qrWrapper.style.display = 'block';
+    }
 
     if (subMethod.instructions) {
         notesBox.innerText = subMethod.instructions;

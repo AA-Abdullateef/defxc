@@ -28,7 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Sanctum stateful domains for SPA (if ever needed)
-        $middleware->statefulApi();
+        // User auth is purely Bearer-token-based (Sanctum tokens stored in localStorage).
+        // statefulApi() is for cookie/session Sanctum — not used here. Excluding api/*
+        // from CSRF is belt-and-suspenders so fetch calls from the user portal never hit
+        // a CSRF mismatch regardless of browser or middleware order.
+        $middleware->validateCsrfTokens(except: ['api/*']);
 
         // Trust proxies in production (Nginx, load balancers)
         $middleware->trustProxies(at: '*');
