@@ -52,6 +52,9 @@ async function fetchTransactionLedgerEntries() {
 
         if (result.success && result.data && result.data.length > 0) {
             result.data.forEach(tx => {
+                const direction = tx.meta ? tx.meta.direction : null;
+                const isCredit = tx.type === 'deposit' || (tx.type === 'transfer' && direction === 'incoming');
+                const sign = isCredit ? '+' : '-';
                 let badgeClass = 'badge-secondary';
                 const statusStr = (tx.status || 'Completed').toLowerCase();
                 
@@ -71,7 +74,7 @@ async function fetchTransactionLedgerEntries() {
                         <td class="py-3 pl-0 text-muted font-family-monospace" style="font-size:11px;">${tx.id.substring(0, 8)}...</td>
                         <td class="py-3 font-weight-bold text-dark">${tx.asset_symbol || tx.symbol || 'Asset'}</td>
                         <td class="py-3 text-capitalize text-secondary">${tx.type || 'Transfer'}</td>
-                        <td class="py-3 font-weight-bold ${tx.type === 'deposit' ? 'text-success' : 'text-dark'}">${tx.type === 'deposit' ? '+' : '-'}${tx.amount}</td>
+                        <td class="py-3 font-weight-bold ${isCredit ? 'text-success' : 'text-dark'}">${sign}${tx.amount}</td>
                         <td class="py-3"><span class="badge ${badgeClass} text-capitalize px-2 py-1">${tx.status}</span></td>
                         <td class="py-3 pr-0 text-end">${actionButtonHtml}</td>
                     </tr>

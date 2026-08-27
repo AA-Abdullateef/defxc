@@ -105,6 +105,9 @@ async function openAssetDetail(assetId, label, balance) {
             document.getElementById('asset-detail-balance').innerText = result.data.balance || balance;
 
             result.data.transactions.forEach(tx => {
+                const direction = tx.meta ? tx.meta.direction : null;
+                const isCredit = tx.type === 'deposit' || (tx.type === 'transfer' && direction === 'incoming');
+                const sign = isCredit ? '+' : '-';
                 let badgeClass = 'badge-secondary';
                 const statusStr = (tx.status || 'completed').toLowerCase();
 
@@ -116,7 +119,7 @@ async function openAssetDetail(assetId, label, balance) {
                     <tr class="border-bottom-0">
                         <td class="py-3 pl-0 text-muted font-family-monospace" style="font-size:11px;">${tx.id ? tx.id.toString().substring(0, 8) + '...' : 'N/A'}</td>
                         <td class="py-3 text-capitalize text-secondary">${tx.type_label || tx.type || 'Transfer'}</td>
-                        <td class="py-3 font-weight-bold ${tx.type === 'deposit' ? 'text-success' : 'text-dark'}">${tx.type === 'deposit' ? '+' : '-'}${tx.amount}</td>
+                        <td class="py-3 font-weight-bold ${isCredit ? 'text-success' : 'text-dark'}">${sign}${tx.amount}</td>
                         <td class="py-3 pr-0"><span class="badge ${badgeClass} text-capitalize px-2 py-1">${tx.status_label || tx.status}</span></td>
                     </tr>
                 `;

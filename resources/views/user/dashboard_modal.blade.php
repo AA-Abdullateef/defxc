@@ -34,17 +34,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const badgesContainer = document.getElementById('asset-badges-container');
             if (badgesContainer) {
                 badgesContainer.innerHTML = '';
-                let totalNetValue = 0;
+                const assetBalances = Array.isArray(result.data.asset_balances)
+                    ? result.data.asset_balances
+                    : [];
 
-                if (result.data.balances && typeof result.data.balances === 'object') {
-                    Object.entries(result.data.balances).forEach(([assetName, assetData]) => {
-                        const balance = assetData ? (assetData.balance || 0) : 0;
-                        const usdEquivalent = assetData ? (assetData.usd_value || 0) : 0;
-                        totalNetValue += usdEquivalent;
+                if (assetBalances.length > 0) {
+                    assetBalances.forEach(entry => {
+                        const asset = entry.asset || {};
+                        const label = asset.label || asset.name || 'Asset';
+                        const symbol = asset.name ? asset.name.toUpperCase() : '';
+                        const balance = entry.balance || 0;
 
                         badgesContainer.innerHTML += `
                             <span class="badge badge-light border text-secondary px-2 py-1 mr-1 mb-1" style="font-size: 11px; font-weight: 500;">
-                                <strong>${assetName}:</strong> ${balance} <small class="text-muted">($${usdEquivalent.toFixed(2)})</small>
+                                <strong>${label}:</strong> ${balance} <small class="text-muted">${symbol}</small>
                             </span>
                         `;
                     });
@@ -52,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const worthEl = document.getElementById('wallet-balance');
                 if (worthEl) {
-                    worthEl.innerText = '$' + totalNetValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    worthEl.innerText = assetBalances.length + ' assets';
                 }
             }
 
@@ -74,6 +77,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const type = tx.type || 'Transfer';
                         const amount = tx.amount || '0.00';
                         const status = tx.status || 'Completed';
+                        const direction = tx.meta ? tx.meta.direction : null;
+                        const isCredit = type === 'deposit' || (type === 'transfer' && direction === 'incoming');
+                        const sign = isCredit ? '+' : '-';
 
                         let badgeClass = 'badge-secondary';
                         const normalizedStatus = status.toLowerCase();
@@ -87,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <td class="py-3 pl-0 text-muted font-family-monospace" style="font-size:11px;">${txId}</td>
                                 <td class="py-3 font-weight-bold text-dark">${symbol}</td>
                                 <td class="py-3 text-capitalize text-secondary">${type}</td>
-                                <td class="py-3 font-weight-bold ${type === 'deposit' ? 'text-success' : 'text-dark'}">${type === 'deposit' ? '+' : '-'}${amount}</td>
+                                <td class="py-3 font-weight-bold ${isCredit ? 'text-success' : 'text-dark'}">${sign}${amount}</td>
                                 <td class="py-3 pr-0"><span class="badge ${badgeClass} text-capitalize px-2 py-1">${status}</span></td>
                             </tr>
                         `;

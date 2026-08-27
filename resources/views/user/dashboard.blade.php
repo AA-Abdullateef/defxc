@@ -12,8 +12,7 @@
                 <div class="card-body p-4">
                     <h6 class="text-muted text-uppercase mb-2 font-weight-bold" style="font-size: 12px; letter-spacing: 0.5px;">Asset Liquidity</h6>
                     <div class="d-flex align-items-baseline mb-2">
-                        <span class="h1 mb-0 font-weight-bold text-success" id="wallet-balance">$0.00</span>
-                        <span class="text-muted ml-2" style="font-size: 14px;">USD</span>
+                        <span class="h4 mb-0 font-weight-bold text-success" id="wallet-balance">Per-asset balances</span>
                     </div>
                     
                     <!-- Dynamic Asset Badges Container Row -->

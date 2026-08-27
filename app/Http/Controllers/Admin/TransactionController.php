@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\AuditLog;
 use App\Models\Transaction;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -82,17 +84,35 @@ class TransactionController extends Controller
             );
         }
 
-        $before = ['status'=>$transaction->status];
+        $before = ['status' => $transaction->status];
+        $completedTransactions = [];
 
-        $transaction->update([
-            'status'=>TransactionStatus::Completed->value
-        ]);
+        DB::transaction(function () use ($transaction, &$completedTransactions): void {
+            $transaction->update([
+                'status' => TransactionStatus::Completed->value,
+            ]);
 
-        $this->notificationService
-            ->sendTransactionNotice(
-                $transaction->loadMissing('wallet.user')->wallet,
-                $transaction
-            );
+            $completedTransactions[] = $transaction->fresh('wallet.user');
+
+            $relatedTransfer = $this->relatedPendingTransfer($transaction);
+
+            if ($relatedTransfer) {
+                $relatedTransfer->update([
+                    'status' => TransactionStatus::Completed->value,
+                ]);
+
+                $completedTransactions[] = $relatedTransfer->fresh('wallet.user');
+            }
+        });
+
+        foreach ($completedTransactions as $completedTransaction) {
+            if ($completedTransaction->wallet) {
+                $this->notificationService->sendTransactionNotice(
+                    $completedTransaction->wallet,
+                    $completedTransaction
+                );
+            }
+        }
 
         AuditLog::record(
             action:'transaction.completed',
@@ -122,17 +142,35 @@ class TransactionController extends Controller
             );
         }
 
-        $before = ['status'=>$transaction->status];
+        $before = ['status' => $transaction->status];
+        $cancelledTransactions = [];
 
-        $transaction->update([
-            'status'=>TransactionStatus::Cancelled->value
-        ]);
+        DB::transaction(function () use ($transaction, &$cancelledTransactions): void {
+            $transaction->update([
+                'status' => TransactionStatus::Cancelled->value,
+            ]);
 
-        $this->notificationService
-            ->sendTransactionNotice(
-                $transaction->loadMissing('wallet.user')->wallet,
-                $transaction
-            );
+            $cancelledTransactions[] = $transaction->fresh('wallet.user');
+
+            $relatedTransfer = $this->relatedPendingTransfer($transaction);
+
+            if ($relatedTransfer) {
+                $relatedTransfer->update([
+                    'status' => TransactionStatus::Cancelled->value,
+                ]);
+
+                $cancelledTransactions[] = $relatedTransfer->fresh('wallet.user');
+            }
+        });
+
+        foreach ($cancelledTransactions as $cancelledTransaction) {
+            if ($cancelledTransaction->wallet) {
+                $this->notificationService->sendTransactionNotice(
+                    $cancelledTransaction->wallet,
+                    $cancelledTransaction
+                );
+            }
+        }
 
         AuditLog::record(
             action:'transaction.cancelled',
@@ -151,5 +189,45 @@ class TransactionController extends Controller
                 'success',
                 'Transaction cancelled.'
             );
+    }
+
+    private function relatedPendingTransfer(Transaction $transaction): ?Transaction
+    {
+        if ($transaction->type !== TransactionType::Transfer->value) {
+            return null;
+        }
+
+        $direction = $transaction->meta['direction'] ?? null;
+
+        if ($direction === 'outgoing') {
+            return Transaction::query()
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('wallet_id', $transaction->reference)
+                ->where('asset_id', $transaction->asset_id)
+                ->where('amount', $transaction->amount)
+                ->where('reference', $transaction->wallet_id)
+                ->where('meta->direction', 'incoming')
+                ->where('meta->from_wallet_id', $transaction->wallet_id)
+                ->latest()
+                ->first();
+        }
+
+        if ($direction === 'incoming') {
+            $senderWalletId = $transaction->meta['from_wallet_id'] ?? $transaction->reference;
+
+            return Transaction::query()
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('wallet_id', $senderWalletId)
+                ->where('asset_id', $transaction->asset_id)
+                ->where('amount', $transaction->amount)
+                ->where('reference', $transaction->wallet_id)
+                ->where('meta->direction', 'outgoing')
+                ->latest()
+                ->first();
+        }
+
+        return null;
     }
 }

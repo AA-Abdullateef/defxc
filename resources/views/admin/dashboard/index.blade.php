@@ -5,24 +5,9 @@
 @section('content')
 <div class="stat-grid mb-6">
     <div class="stat-card">
-        <div class="stat-label">Total Deposits</div>
-        <div class="stat-value amber">${{ number_format($totals['total_deposits'], 2) }}</div>
-        <div class="stat-sub">Completed</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Withdrawals</div>
-        <div class="stat-value red">${{ number_format($totals['total_withdrawals'], 2) }}</div>
-        <div class="stat-sub">Pending + completed</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Transfers</div>
-        <div class="stat-value">${{ number_format($totals['total_transfers'], 2) }}</div>
-        <div class="stat-sub">Completed</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Users</div>
-        <div class="stat-value green">{{ number_format($totalUsers) }}</div>
-        <div class="stat-sub">Customers</div>
+        <div class="stat-label">Asset Totals</div>
+        <div class="stat-value amber">{{ count($totals) }}</div>
+        <div class="stat-sub">Assets with activity</div>
     </div>
     <div class="stat-card">
         <div class="stat-label">Pending Deposits</div>
@@ -33,6 +18,36 @@
         <div class="stat-label">Pending Withdrawals</div>
         <div class="stat-value red">{{ $pendingWithdrawals }}</div>
         <div class="stat-sub">Awaiting processing</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value green">{{ number_format($totalUsers) }}</div>
+        <div class="stat-sub">Customers</div>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <div class="card-header">
+        <span class="card-title">Platform Asset Totals</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Asset</th><th>Deposits</th><th>Withdrawals</th><th>Transfers</th></tr>
+            </thead>
+            <tbody>
+                @forelse($totals as $total)
+                <tr>
+                    <td class="td-mono">{{ strtoupper($total['asset']->name) }}</td>
+                    <td class="td-mono">{{ number_format($total['deposits'], 5) }}</td>
+                    <td class="td-mono">{{ number_format($total['withdrawals'], 5) }}</td>
+                    <td class="td-mono">{{ number_format($total['transfers'], 5) }}</td>
+                </tr>
+                @empty
+                <tr><td colspan="4" style="text-align:center;color:var(--text-faint);padding:32px">No asset activity yet.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 

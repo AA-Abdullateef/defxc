@@ -35,7 +35,7 @@ class AccountController extends Controller
     $assetId = $request->query('asset_id');
 
     // Now these lines will execute perfectly without throwing PHP errors!
-    $query = Transaction::where('wallet_id', $wallet->id)->latest()->take(20);
+    $query = Transaction::with('asset')->where('wallet_id', $wallet->id)->latest()->take(20);
     if ($assetId) {
         $query->where('asset_id', $assetId);
     }
@@ -43,10 +43,15 @@ class AccountController extends Controller
     $recent   = $query->get();
     $assets   = Asset::active()->get();
     $balances = $this->ledger->allBalancesFor($wallet->id);
+    $assetBalances = $assets->map(fn (Asset $asset) => [
+        'asset' => new AssetResource($asset),
+        'balance' => $balances[$asset->id] ?? 0,
+    ])->values();
 
     return $this->success('Dashboard data.', [
         'assets'   => AssetResource::collection($assets),
         'balances' => $balances,
+        'asset_balances' => $assetBalances,
         'recent'   => TransactionResource::collection($recent),
         'wallet'   => [
             'id'          => $wallet->id,
@@ -82,6 +87,7 @@ class AccountController extends Controller
 
         $transactions = Transaction::where('wallet_id', $wallet->id)
                                    ->where('asset_id', $assetId)
+                                   ->with('asset')
                                    ->latest()
                                    ->take(50)
                                    ->get();

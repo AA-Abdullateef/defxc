@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\API\V1;
 
+use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\API\V1\TransactionResource;
 use App\Models\Transaction;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -19,7 +22,7 @@ class TransactionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Transaction::where('wallet_id', $request->wallet()->id)->latest();
+        $query = Transaction::with('asset')->where('wallet_id', $request->wallet()->id)->latest();
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
@@ -62,10 +65,58 @@ class TransactionController extends Controller
             return $this->error('Only pending transactions can be cancelled.', null, 422);
         }
 
-        $transaction->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($transaction): void {
+            $transaction->update(['status' => TransactionStatus::Cancelled->value]);
+
+            $relatedTransfer = $this->relatedPendingTransfer($transaction);
+
+            if ($relatedTransfer) {
+                $relatedTransfer->update(['status' => TransactionStatus::Cancelled->value]);
+            }
+        });
 
         return $this->success('Transaction cancelled.', [
-            'transaction' => new TransactionResource($transaction->fresh()),
+            'transaction' => new TransactionResource($transaction->fresh('asset')),
         ]);
+    }
+
+    private function relatedPendingTransfer(Transaction $transaction): ?Transaction
+    {
+        if ($transaction->type !== TransactionType::Transfer->value) {
+            return null;
+        }
+
+        $direction = $transaction->meta['direction'] ?? null;
+
+        if ($direction === 'outgoing') {
+            return Transaction::query()
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('wallet_id', $transaction->reference)
+                ->where('asset_id', $transaction->asset_id)
+                ->where('amount', $transaction->amount)
+                ->where('reference', $transaction->wallet_id)
+                ->where('meta->direction', 'incoming')
+                ->where('meta->from_wallet_id', $transaction->wallet_id)
+                ->latest()
+                ->first();
+        }
+
+        if ($direction === 'incoming') {
+            $senderWalletId = $transaction->meta['from_wallet_id'] ?? $transaction->reference;
+
+            return Transaction::query()
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('wallet_id', $senderWalletId)
+                ->where('asset_id', $transaction->asset_id)
+                ->where('amount', $transaction->amount)
+                ->where('reference', $transaction->wallet_id)
+                ->where('meta->direction', 'outgoing')
+                ->latest()
+                ->first();
+        }
+
+        return null;
     }
 }
