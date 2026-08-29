@@ -40,9 +40,10 @@ class AccountController extends Controller
         $query->where('asset_id', $assetId);
     }
 
-    $recent   = $query->get();
-    $assets   = Asset::active()->get();
+    $recent = $query->get();
+    $assets = Asset::active()->get();
     $balances = $this->ledger->allBalancesFor($wallet->id);
+    $portfolioUsd = $this->ledger->totalUsdBalanceFor($wallet->id);
     $assetBalances = $assets->map(fn (Asset $asset) => [
         'asset' => new AssetResource($asset),
         'balance' => $balances[$asset->id] ?? 0,
@@ -50,9 +51,10 @@ class AccountController extends Controller
 
     return $this->success('Dashboard data.', [
         'assets'   => AssetResource::collection($assets),
+        'balance' => $portfolioUsd['total_usd'],
         'balances' => $balances,
         'asset_balances' => $assetBalances,
-        'portfolio_usd' => $this->ledger->totalUsdBalanceFor($wallet->id),
+        'portfolio_usd' => $portfolioUsd,
         'recent'   => TransactionResource::collection($recent),
         'wallet'   => [
             'id'          => $wallet->id,

@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Events\TransferInitiated;
+use App\Http\Controllers\API\V1\AccountController;
 use App\Models\Asset;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Services\FundsService;
 use App\Services\LedgerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -127,6 +129,27 @@ class FundsServiceTest extends TestCase
 
         $this->assertSame(25100.0, $total['total_usd']);
         $this->assertSame(1, $total['unpriced_asset_count']);
+    }
+
+    public function test_dashboard_returns_legacy_balance_key_as_total_usd_balance(): void
+    {
+        $wallet = $this->wallet('dashboard');
+        $usd = $this->asset('usd', 1);
+        $btc = $this->asset('btc', 50000);
+
+        $this->completedDeposit($wallet, $usd, 100);
+        $this->completedDeposit($wallet, $btc, 0.5);
+
+        $request = Request::create('/api/v1/dashboard', 'GET');
+        $request->setUserResolver(fn () => $wallet);
+
+        $response = app(AccountController::class)->dashboard($request);
+        $payload = $response->getData(true);
+
+        $this->assertEquals(25100.0, $payload['data']['balance']);
+        $this->assertEquals(25100.0, $payload['data']['portfolio_usd']['total_usd']);
+        $this->assertArrayHasKey('balances', $payload['data']);
+        $this->assertArrayHasKey('asset_balances', $payload['data']);
     }
 
     private function asset(string $name = 'btc', ?float $price = null): Asset

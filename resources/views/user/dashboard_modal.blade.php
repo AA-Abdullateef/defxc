@@ -55,7 +55,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const worthEl = document.getElementById('wallet-balance');
                 if (worthEl) {
-                    worthEl.innerText = assetBalances.length + ' assets';
+                    const totalBalance = Number(result.data.balance || 0);
+                    worthEl.innerText = '$' + totalBalance.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
                 }
             }
 
