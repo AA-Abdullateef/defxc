@@ -24,7 +24,7 @@ class LedgerService
     {
         $deposited     = $this->sum($walletId, $assetId, TransactionType::Deposit->value,    [TransactionStatus::Completed->value]);
         $transfersIn   = $this->sum($walletId, $assetId, TransactionType::Transfer->value,   [TransactionStatus::Completed->value], 'incoming');
-        $transfersOut  = $this->sum($walletId, $assetId, TransactionType::Transfer->value,   [TransactionStatus::Pending->value, TransactionStatus::Completed->value], 'outgoing');
+        $transfersOut  = $this->sum($walletId, $assetId, TransactionType::Transfer->value,   TransactionStatus::transferDebitStatuses(), 'outgoing');
         $withdrawn     = $this->sum($walletId, $assetId, TransactionType::Withdrawal->value, TransactionStatus::withdrawalDebitStatuses());
 
         return round($deposited + $transfersIn - $transfersOut - $withdrawn, 5);
@@ -42,6 +42,36 @@ class LedgerService
                         $asset->id => $this->balanceFor($walletId, $asset->id),
                     ])
                     ->all();
+    }
+
+    /**
+     * Total portfolio value in USD, converting each asset's balance using
+     * its stored current_price. Assets with no price yet (never synced, or
+     * price_source is null/manual-without-a-price) are excluded from the
+     * total and flagged via unpriced_asset_count so the frontend can show
+     * "value unavailable" rather than silently under-counting.
+     */
+    public function totalUsdBalanceFor(string $walletId): array
+    {
+        $lines = Asset::active()->get()->map(function (Asset $asset) use ($walletId) {
+            $balance = $this->balanceFor($walletId, $asset->id);
+            $price   = $asset->current_price !== null ? (float) $asset->current_price : null;
+            $priced  = $price !== null && $price > 0;
+
+            return [
+                'asset_id'          => $asset->id,
+                'balance'           => $balance,
+                'price_usd'         => $priced ? $price : null,
+                'value_usd'         => $priced ? round($balance * $price, 2) : null,
+                'price_updated_at'  => $asset->price_updated_at?->toISOString(),
+            ];
+        });
+
+        return [
+            'total_usd'            => round($lines->sum(fn (array $l) => $l['value_usd'] ?? 0.0), 2),
+            'assets'                => $lines->values()->all(),
+            'unpriced_asset_count' => $lines->filter(fn (array $l) => $l['price_usd'] === null)->count(),
+        ];
     }
 
     /**

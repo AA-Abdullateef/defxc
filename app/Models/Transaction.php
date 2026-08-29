@@ -97,6 +97,74 @@ class Transaction extends Model
         return $this->status === TransactionStatus::Cancelled->value;
     }
 
+    public function relatedPendingTransferLeg(): ?self
+    {
+        if ($this->type !== TransactionType::Transfer->value) {
+            return null;
+        }
+
+        $direction = $this->meta['direction'] ?? null;
+        $oppositeDirection = match ($direction) {
+            'outgoing' => 'incoming',
+            'incoming' => 'outgoing',
+            default => null,
+        };
+
+        if ($oppositeDirection === null) {
+            return null;
+        }
+
+        $transferId = $this->meta['transfer_id'] ?? null;
+
+        if ($transferId) {
+            return self::query()
+                ->whereKeyNot($this->id)
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('asset_id', $this->asset_id)
+                ->where('amount', $this->amount)
+                ->where('meta->direction', $oppositeDirection)
+                ->where('meta->transfer_id', $transferId)
+                ->first();
+        }
+
+        return $this->legacyPendingTransferLeg($direction);
+    }
+
+    private function legacyPendingTransferLeg(string $direction): ?self
+    {
+        if ($direction === 'outgoing') {
+            return self::query()
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('wallet_id', $this->reference)
+                ->where('asset_id', $this->asset_id)
+                ->where('amount', $this->amount)
+                ->where('reference', $this->wallet_id)
+                ->where('meta->direction', 'incoming')
+                ->where('meta->from_wallet_id', $this->wallet_id)
+                ->latest()
+                ->first();
+        }
+
+        if ($direction === 'incoming') {
+            $senderWalletId = $this->meta['from_wallet_id'] ?? $this->reference;
+
+            return self::query()
+                ->where('type', TransactionType::Transfer->value)
+                ->where('status', TransactionStatus::Pending->value)
+                ->where('wallet_id', $senderWalletId)
+                ->where('asset_id', $this->asset_id)
+                ->where('amount', $this->amount)
+                ->where('reference', $this->wallet_id)
+                ->where('meta->direction', 'outgoing')
+                ->latest()
+                ->first();
+        }
+
+        return null;
+    }
+
     public function statusLabel(): string
     {
         return TransactionStatus::from($this->status)->label();

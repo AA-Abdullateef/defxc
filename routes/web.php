@@ -71,6 +71,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Assets
         Route::get('assets',                 [Admin\AssetController::class, 'index'])->name('assets.index');
+        // The "Sync Prices" route that triggers the price sync 
+        Route::post('assets/sync-prices',    [Admin\AssetController::class, 'syncPrices'])->name('assets.sync-prices');
         Route::get('assets/create',          [Admin\AssetController::class, 'create'])->name('assets.create');
         Route::post('assets',                [Admin\AssetController::class, 'store'])->name('assets.store');
         Route::get('assets/{asset}/edit',    [Admin\AssetController::class, 'edit'])->name('assets.edit');
@@ -111,4 +113,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('tokens',            [Admin\TokenController::class, 'index'])->name('tokens.index');
         Route::delete('tokens/{token}', [Admin\TokenController::class, 'destroy'])->name('tokens.destroy');
     });
+
+    // ── Automated price sync ─────────────────────────────────────────────────
+    // Deliberately outside the auth:admin group — meant to be hit by an
+    // external cron/uptime service (e.g. cron-job.org, a server crontab curl)
+    // on a schedule, which can't carry an interactive admin session. Guarded
+    // by a shared secret instead. The admin panel's own "Sync Prices" button
+    // (assets.sync-prices, POST, inside the authenticated group above) is the
+    // manual/interactive trigger and is unaffected by this.
+    Route::get('assets/sync-prices/run', function (\App\Services\AssetPriceService $priceService, \Illuminate\Http\Request $request) {
+        $expected = (string) config('services.price_sync.key');
+
+        if ($expected === '' || ! hash_equals($expected, (string) $request->query('key'))) {
+            abort(403, 'Invalid or missing sync key.');
+        }
+
+        return response()->json($priceService->syncAll());
+    })->name('assets.sync-prices.run');
 });

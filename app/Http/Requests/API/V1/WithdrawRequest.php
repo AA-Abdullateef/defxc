@@ -10,7 +10,7 @@ class WithdrawRequest extends ApiFormRequest
             'asset_id'  => ['required', 'uuid', 'exists:assets,id'],
             'sub_method_id' => ['required', 'uuid', 'exists:sub_methods,id'],
             'reference' => ['required', 'string', 'min:9'],  // external wallet address
-            'amount'    => ['required', 'numeric', 'gt:0'],
+            'amount'    => ['required', 'numeric', 'decimal:0,5', 'gt:0', 'max:9999999999.99999'],
         ];
     }
 }

@@ -52,6 +52,7 @@ class AccountController extends Controller
         'assets'   => AssetResource::collection($assets),
         'balances' => $balances,
         'asset_balances' => $assetBalances,
+        'portfolio_usd' => $this->ledger->totalUsdBalanceFor($wallet->id),
         'recent'   => TransactionResource::collection($recent),
         'wallet'   => [
             'id'          => $wallet->id,

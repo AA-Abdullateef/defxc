@@ -35,4 +35,26 @@ return [
         ],
     ],
 
+    // USD market price providers, used by AssetPriceService to convert
+    // per-asset balances into a total portfolio value.
+    'coingecko' => [
+        'key' => env('COINGECKO_API_KEY'),
+        'require_key' => env('COINGECKO_REQUIRE_KEY', false),
+    ],
+
+    'alphavantage' => [
+        'key' => env('ALPHAVANTAGE_API_KEY'),
+    ],
+
+    'finnhub' => [
+        'key' => env('FINNHUB_API_KEY'),
+    ],
+
+    // Shared secret for the unauthenticated GET admin/assets/sync-prices/run
+    // route, so an external cron/uptime service can trigger a price sync
+    // without an interactive admin session. Set a long random value in .env.
+    'price_sync' => [
+        'key' => env('PRICE_SYNC_SECRET'),
+    ],
+
 ];

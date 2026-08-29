@@ -44,10 +44,12 @@ enum TransactionStatus: string
     }
 
     /**
-     * Statuses that lock funds out for active trades.
+     * Statuses that lock funds out on the debit side for outgoing transfers.
+     * Same lifecycle as withdrawals: once money has left the wallet (pending),
+     * it stays debited through completion.
      */
-    public static function tradeDebitStatuses(): array
+    public static function transferDebitStatuses(): array
     {
-        return [self::Pending->value];
+        return [self::Pending->value, self::Completed->value];
     }
 }

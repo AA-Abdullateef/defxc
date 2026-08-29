@@ -8,8 +8,8 @@ class TransferRequest extends ApiFormRequest
     {
         return [
             'asset_id'     => ['required', 'uuid', 'exists:assets,id'],
-            'amount'       => ['required', 'numeric', 'min:0.1'],
-            'recipient_id' => ['nullable', 'uuid', 'exists:wallets,id'],
+            'amount'       => ['required', 'numeric', 'decimal:0,5', 'gt:0', 'max:9999999999.99999'],
+            'recipient_id' => ['required', 'uuid', 'exists:wallets,id'],
         ];
     }
 }

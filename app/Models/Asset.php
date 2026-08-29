@@ -10,11 +10,24 @@ class Asset extends Model
 {
     use HasUuid;
 
-    protected $fillable = ['name', 'label', 'icon', 'active'];
+    protected $fillable = [
+        'name',
+        'label',
+        'icon',
+        'active',
+        'price_source',
+        'price_source_id',
+        'current_price',
+        'price_updated_at',
+    ];
 
     protected function casts(): array
     {
-        return ['active' => 'boolean'];
+        return [
+            'active' => 'boolean',
+            'current_price' => 'decimal:8',
+            'price_updated_at' => 'datetime',
+        ];
     }
 
     public function scopeActive($query)

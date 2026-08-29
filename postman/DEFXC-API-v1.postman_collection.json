@@ -2403,6 +2403,13 @@
 									"if (assets && assets.length > 0) {",
 									"  pm.environment.set('asset_id', assets[0].asset.id);",
 									"  console.log('asset_id set to:', assets[0].asset.name, assets[0].asset.id);",
+									"}",
+									"",
+									"// Track this asset's balance so a later request (e.g. after a transfer) can diff against it",
+									"const activeAssetId = pm.environment.get('asset_id');",
+									"const entry = (assets || []).find(a => a.asset.id === activeAssetId);",
+									"if (entry) {",
+									"  pm.environment.set('asset_balance_before', entry.balance);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -3493,7 +3500,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"message\": \"Transactions.\",\n    \"data\": [\n        {\n            \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n            \"type\": \"deposit\",\n            \"type_label\": \"Deposit\",\n            \"amount\": 500.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"pending\",\n            \"status_label\": \"Pending\",\n            \"reference\": null,\n            \"meta\": null,\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        },\n        {\n            \"id\": \"01a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"type\": \"withdrawal\",\n            \"type_label\": \"Withdrawal\",\n            \"amount\": 100.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"completed\",\n            \"status_label\": \"Completed\",\n            \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n            \"meta\": null,\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 15,\n        \"total\": 2,\n        \"last_page\": 1\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"message\": \"Transactions.\",\n    \"data\": [\n        {\n            \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n            \"type\": \"deposit\",\n            \"type_label\": \"Deposit\",\n            \"amount\": 500.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"pending\",\n            \"status_label\": \"Pending\",\n            \"reference\": null,\n            \"meta\": null,\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        },\n        {\n            \"id\": \"01a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"type\": \"withdrawal\",\n            \"type_label\": \"Withdrawal\",\n            \"amount\": 100.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"completed\",\n            \"status_label\": \"Completed\",\n            \"reference\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\",\n            \"meta\": null,\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        },\n        {\n            \"id\": \"b2c3d4e5-f6a7-4890-a123-c4d5e6f7a8b9\",\n            \"type\": \"transfer\",\n            \"type_label\": \"Transfer\",\n            \"amount\": 50.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": null,\n            \"sub_method\": null,\n            \"status\": \"completed\",\n            \"status_label\": \"Completed\",\n            \"reference\": \"f6a7b8c9-d0e1-4234-b546-a7b8c9d0e1f2\",\n            \"meta\": {\n                \"direction\": \"incoming\",\n                \"from_wallet_id\": \"f6a7b8c9-d0e1-4234-b546-a7b8c9d0e1f2\"\n            },\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:05:00.000000Z\",\n            \"proof\": null\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 15,\n        \"total\": 3,\n        \"last_page\": 1\n    }\n}"
 						}
 					]
 				},
@@ -3527,7 +3534,7 @@
 							},
 							"raw": "{\n  \"status\": \"cancelled\"\n}"
 						},
-						"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'."
+						"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'. For transfers: cancelling either leg (the sender's outgoing row or the recipient's incoming row) automatically cancels the other leg too, since both must resolve together."
 					},
 					"response": [
 						{
@@ -3560,7 +3567,7 @@
 									},
 									"raw": "{\n  \"status\": \"cancelled\"\n}"
 								},
-								"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'."
+								"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'. For transfers: cancelling either leg (the sender's outgoing row or the recipient's incoming row) automatically cancels the other leg too, since both must resolve together."
 							},
 							"status": "OK",
 							"code": 200,
@@ -3604,7 +3611,7 @@
 									},
 									"raw": "{\n  \"status\": \"cancelled\"\n}"
 								},
-								"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'."
+								"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'. For transfers: cancelling either leg (the sender's outgoing row or the recipient's incoming row) automatically cancels the other leg too, since both must resolve together."
 							},
 							"status": "Forbidden",
 							"code": 403,
@@ -3648,7 +3655,7 @@
 									},
 									"raw": "{\n  \"status\": \"cancelled\"\n}"
 								},
-								"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'."
+								"description": "Users can only cancel their own pending transactions. Status must be 'cancelled'. For transfers: cancelling either leg (the sender's outgoing row or the recipient's incoming row) automatically cancels the other leg too, since both must resolve together."
 							},
 							"status": "Unprocessable Entity",
 							"code": 422,
@@ -4660,7 +4667,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"message\": \"Transfer options.\",\n    \"data\": {\n        \"assets\": [\n            {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            }\n        ],\n        \"pending\": [\n            {\n                \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n                \"type\": \"transfer\",\n                \"type_label\": \"Transfer\",\n                \"amount\": 500.0,\n                \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"asset\": {\n                    \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                    \"name\": \"usdt\",\n                    \"label\": \"USDT (TRC20)\",\n                    \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n                },\n                \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"sub_method\": {\n                    \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                    \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                    \"name\": \"Trust Wallet\",\n                    \"account_name\": null,\n                    \"account_number\": null,\n                    \"bank_name\": null,\n                    \"routing_number\": null,\n                    \"swift_code\": null,\n                    \"iban\": null,\n                    \"wallet_address\": \"TXn9pQq...trc20\",\n                    \"network\": \"TRC20\",\n                    \"instructions\": \"Send only USDT via the TRC20 network.\",\n                    \"is_active\": true,\n                    \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                    \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n                },\n                \"status\": \"pending\",\n                \"status_label\": \"Pending\",\n                \"reference\": null,\n                \"meta\": null,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"proof\": null\n            }\n        ]\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"message\": \"Transfer options.\",\n    \"data\": {\n        \"assets\": [\n            {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            }\n        ],\n        \"pending\": [\n            {\n                \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n                \"type\": \"transfer\",\n                \"type_label\": \"Transfer\",\n                \"amount\": 500.0,\n                \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"asset\": {\n                    \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                    \"name\": \"usdt\",\n                    \"label\": \"USDT (TRC20)\",\n                    \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n                },\n                \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"sub_method\": {\n                    \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                    \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                    \"name\": \"Trust Wallet\",\n                    \"account_name\": null,\n                    \"account_number\": null,\n                    \"bank_name\": null,\n                    \"routing_number\": null,\n                    \"swift_code\": null,\n                    \"iban\": null,\n                    \"wallet_address\": \"TXn9pQq...trc20\",\n                    \"network\": \"TRC20\",\n                    \"instructions\": \"Send only USDT via the TRC20 network.\",\n                    \"is_active\": true,\n                    \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                    \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n                },\n                \"status\": \"pending\",\n                \"status_label\": \"Pending\",\n                \"reference\": null,\n                \"meta\": {\n                    \"direction\": \"outgoing\"\n                },\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"proof\": null\n            }\n        ]\n    }\n}"
 						}
 					]
 				},
@@ -4699,9 +4706,21 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test('transfer created', () => {",
+									"  pm.expect([200, 201]).to.include(pm.response.code);",
+									"});",
+									"",
 									"const res = pm.response.json();",
 									"if (res.data?.transaction?.id) {",
 									"  pm.environment.set('transaction_id', res.data.transaction.id);",
+									"}",
+									"",
+									"// Regression guard for the balance bug: a transfer must debit the sender",
+									"// immediately, and — per LedgerService — must STAY debited through completion,",
+									"// not just while pending. Run 'Assets Overview' again after this to confirm",
+									"// the drop persists (compare against asset_balance_before captured there).",
+									"if (res.data?.transaction?.amount) {",
+									"  pm.environment.set('last_transfer_amount', res.data.transaction.amount);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -4749,7 +4768,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"message\": \"Transfer initiated.\",\n    \"data\": {\n        \"transaction\": {\n            \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n            \"type\": \"transfer\",\n            \"type_label\": \"Transfer\",\n            \"amount\": 50.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"pending\",\n            \"status_label\": \"Pending\",\n            \"reference\": null,\n            \"meta\": null,\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        }\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"message\": \"Transfer initiated.\",\n    \"data\": {\n        \"transaction\": {\n            \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n            \"type\": \"transfer\",\n            \"type_label\": \"Transfer\",\n            \"amount\": 50.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"pending\",\n            \"status_label\": \"Pending\",\n            \"reference\": null,\n            \"meta\": {\n                \"direction\": \"outgoing\"\n            },\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        }\n    }\n}"
 						},
 						{
 							"name": "200 OK — 2FA enabled, confirmation required",
@@ -4866,7 +4885,7 @@
 							},
 							"raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\",\n  \"token\": \"{{two_factor_token}}\"\n}"
 						},
-						"description": "Same two-step pattern as withdrawals: only required if the recipient's... actually the *sender's* linked user has two_factor enabled."
+						"description": "Same two-step pattern as withdrawals: only required if the sender's linked user account has two_factor enabled."
 					},
 					"response": [
 						{
@@ -4897,7 +4916,8 @@
 										}
 									},
 									"raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\",\n  \"token\": \"{{two_factor_token}}\"\n}"
-								}
+								},
+								"description": "Same two-step pattern as withdrawals: only required if the sender's linked user account has two_factor enabled."
 							},
 							"status": "Created",
 							"code": 201,
@@ -4909,7 +4929,7 @@
 								}
 							],
 							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"message\": \"Transfer initiated.\",\n    \"data\": {\n        \"transaction\": {\n            \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n            \"type\": \"transfer\",\n            \"type_label\": \"Transfer\",\n            \"amount\": 50.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"pending\",\n            \"status_label\": \"Pending\",\n            \"reference\": null,\n            \"meta\": null,\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        }\n    }\n}"
+							"body": "{\n    \"success\": true,\n    \"message\": \"Transfer initiated.\",\n    \"data\": {\n        \"transaction\": {\n            \"id\": \"d4e5f6a7-b8c9-4012-9324-e5f6a7b8c9d0\",\n            \"type\": \"transfer\",\n            \"type_label\": \"Transfer\",\n            \"amount\": 50.0,\n            \"asset_id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n            \"asset\": {\n                \"id\": \"e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e7f8\",\n                \"name\": \"usdt\",\n                \"label\": \"USDT (TRC20)\",\n                \"icon\": \"https://example.com/assets/icons/usdt.svg\"\n            },\n            \"sub_method_id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n            \"sub_method\": {\n                \"id\": \"f2b3c4d5-e6f7-4081-9203-b4c5d6e7f8a9\",\n                \"method_id\": \"a1b2c3d4-e5f6-4708-8192-b2c3d4e5f6a7\",\n                \"name\": \"Trust Wallet\",\n                \"account_name\": null,\n                \"account_number\": null,\n                \"bank_name\": null,\n                \"routing_number\": null,\n                \"swift_code\": null,\n                \"iban\": null,\n                \"wallet_address\": \"TXn9pQq...trc20\",\n                \"network\": \"TRC20\",\n                \"instructions\": \"Send only USDT via the TRC20 network.\",\n                \"is_active\": true,\n                \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n                \"updated_at\": \"2026-08-24T10:00:00.000000Z\"\n            },\n            \"status\": \"pending\",\n            \"status_label\": \"Pending\",\n            \"reference\": null,\n            \"meta\": {\n                \"direction\": \"outgoing\"\n            },\n            \"created_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"updated_at\": \"2026-08-24T10:00:00.000000Z\",\n            \"proof\": null\n        }\n    }\n}"
 						},
 						{
 							"name": "422 — invalid/expired code",
@@ -4939,7 +4959,8 @@
 										}
 									},
 									"raw": "{\n  \"asset_id\": \"{{asset_id}}\",\n  \"amount\": 50.00,\n  \"recipient_id\": \"{{recipient_id}}\",\n  \"token\": \"{{two_factor_token}}\"\n}"
-								}
+								},
+								"description": "Same two-step pattern as withdrawals: only required if the sender's linked user account has two_factor enabled."
 							},
 							"status": "Unprocessable Entity",
 							"code": 422,
@@ -4954,6 +4975,111 @@
 							"body": "{\n    \"success\": false,\n    \"message\": \"Verification code is invalid or has expired.\"\n}"
 						}
 					]
+				},
+				{
+					"name": "Recipient — Assets Overview (before transfer)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{recipient_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"assets"
+							]
+						},
+						"description": "Run BEFORE Initiate Transfer to snapshot the recipient's starting balance for the active asset_id, so 'Recipient — Dashboard (verify credit)' can assert the exact delta afterwards."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('200 ok', () => pm.response.to.have.status(200));",
+									"const res = pm.response.json();",
+									"const activeAssetId = pm.environment.get('asset_id');",
+									"const entry = (res.data?.assets || []).find(a => a.asset.id === activeAssetId);",
+									"if (entry) {",
+									"  pm.environment.set('recipient_asset_balance_before', entry.balance);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Recipient — Dashboard (verify credit)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{recipient_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard?asset_id={{asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard"
+							],
+							"query": [
+								{
+									"key": "asset_id",
+									"value": "{{asset_id}}"
+								}
+							]
+						},
+						"description": "Run this with recipient_token AFTER 'Initiate Transfer' (or after an admin completes it) to confirm the recipient's balance actually reflects the incoming transfer — this is the half of a transfer the sender-only flow can't see, and where the balance-crediting bug lived."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('200 ok', () => pm.response.to.have.status(200));",
+									"",
+									"const res = pm.response.json();",
+									"const activeAssetId = pm.environment.get('asset_id');",
+									"const balances = res.data?.balances || {};",
+									"const currentBalance = balances[activeAssetId];",
+									"",
+									"console.log('Recipient balance for asset:', currentBalance);",
+									"pm.environment.set('recipient_asset_balance_after', currentBalance);",
+									"",
+									"const transferAmount = parseFloat(pm.environment.get('last_transfer_amount') || '0');",
+									"const before = parseFloat(pm.environment.get('recipient_asset_balance_before') || '0');",
+									"",
+									"if (transferAmount > 0) {",
+									"  pm.test('recipient balance increased by the transferred amount', () => {",
+									"    pm.expect(currentBalance).to.be.closeTo(before + transferAmount, 0.00001);",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"response": []
 				}
 			]
 		},

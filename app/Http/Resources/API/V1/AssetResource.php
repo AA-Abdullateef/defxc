@@ -14,6 +14,8 @@ class AssetResource extends JsonResource
             'name'  => $this->name,
             'label' => $this->label,
             'icon'  => $this->icon ? asset('assets/icons/' . $this->icon) : null,
+            'price_usd' => $this->current_price !== null ? (float) $this->current_price : null,
+            'price_updated_at' => $this->price_updated_at?->toISOString(),
         ];
     }
 }

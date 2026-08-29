@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\AuditLog;
+use App\Services\AssetPriceService;
 use Illuminate\Http\Request;
 
 class AssetController extends Controller
 {
+    public function __construct(private readonly AssetPriceService $priceService) {}
+
     public function index()
     {
         $assets = Asset::orderBy('name')->paginate(20);
@@ -32,6 +35,9 @@ class AssetController extends Controller
             'label'  => ['required', 'string', 'max:50'],
             'icon'   => ['nullable', 'string', 'max:191'],
             'active' => ['nullable', 'boolean'],
+            'price_source'    => ['nullable', 'in:manual,coingecko,alphavantage,finnhub'],
+            'price_source_id' => ['nullable', 'required_if:price_source,coingecko,alphavantage,finnhub', 'string', 'max:50'],
+            'current_price' => ['nullable', 'numeric', 'gt:0', 'max:9999999999999999.99999999'],
         ]);
 
         $asset = Asset::create([...$data, 'active' => $data['active'] ?? true]);
@@ -60,6 +66,9 @@ class AssetController extends Controller
             'label'  => ['required', 'string', 'max:50'],
             'icon'   => ['nullable', 'string', 'max:191'],
             'active' => ['nullable', 'boolean'],
+            'price_source'    => ['nullable', 'in:manual,coingecko,alphavantage,finnhub'],
+            'price_source_id' => ['nullable', 'required_if:price_source,coingecko,alphavantage,finnhub', 'string', 'max:50'],
+            'current_price' => ['nullable', 'numeric', 'gt:0', 'max:9999999999999999.99999999'],
         ]);
 
         $before = $asset->toArray();
@@ -92,5 +101,23 @@ class AssetController extends Controller
         $asset->delete();
 
         return redirect()->route('admin.assets.index')->with('success', 'Asset deleted.');
+    }
+
+    public function syncPrices()
+    {
+        $result = $this->priceService->syncAll();
+
+        AuditLog::record(
+            action: 'admin_asset_prices_synced',
+            actorId: auth()->id(),
+            actorType: 'admin',
+            subjectType: 'asset',
+            subjectId: null,
+            after: $result,
+        );
+
+        return redirect()
+            ->route('admin.assets.index')
+            ->with('success', "Price sync completed. Synced: {$result['synced']}; skipped: {$result['skipped']}; failed: {$result['failed']}.");
     }
 }

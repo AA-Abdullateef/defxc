@@ -64,7 +64,9 @@ async function fetchTransactionLedgerEntries() {
 
                 let actionButtonHtml = '';
                 if (statusStr === 'pending') {
-                    actionButtonHtml = `<button class="btn btn-outline-danger btn-xs py-0 px-2 font-weight-bold" onclick="cancelPendingTransaction('${tx.id}')" style="font-size:11px; height:22px;">Cancel</button>`;
+                    const isIncomingTransfer = tx.type === 'transfer' && direction === 'incoming';
+                    const actionLabel = isIncomingTransfer ? 'Decline' : 'Cancel';
+                    actionButtonHtml = `<button class="btn btn-outline-danger btn-xs py-0 px-2 font-weight-bold" onclick="cancelPendingTransaction('${tx.id}', ${isIncomingTransfer})" style="font-size:11px; height:22px;">${actionLabel}</button>`;
                 } else {
                     actionButtonHtml = `<span class="text-muted small">—</span>`;
                 }
@@ -95,8 +97,12 @@ async function fetchTransactionLedgerEntries() {
     }
 }
 
-async function cancelPendingTransaction(txId) {
-    if (!confirm('Are you absolutely sure you want to cancel this pending transaction activity line item?')) return;
+async function cancelPendingTransaction(txId, isIncomingTransfer = false) {
+    const confirmMessage = isIncomingTransfer
+        ? 'Decline this incoming transfer? The sender\'s outgoing transfer will also be cancelled and the funds will return to them.'
+        : 'Are you absolutely sure you want to cancel this pending transaction activity line item?';
+
+    if (!confirm(confirmMessage)) return;
 
     const token = localStorage.getItem('auth_token');
     try {
@@ -114,7 +120,7 @@ async function cancelPendingTransaction(txId) {
         const result = await response.json();
 
         if (result.success) {
-            alert('Transaction successfully cancelled.');
+            alert(isIncomingTransfer ? 'Transfer declined.' : 'Transaction successfully cancelled.');
             fetchTransactionLedgerEntries(); 
         } else {
             alert('Cancellation rejected: ' + result.message);
