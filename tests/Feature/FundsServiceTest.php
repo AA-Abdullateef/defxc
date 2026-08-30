@@ -7,6 +7,8 @@ use App\Enums\TransactionType;
 use App\Events\TransferInitiated;
 use App\Http\Controllers\API\V1\AccountController;
 use App\Models\Asset;
+use App\Models\Method;
+use App\Models\SubMethod;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Services\FundsService;
@@ -136,8 +138,9 @@ class FundsServiceTest extends TestCase
         $wallet = $this->wallet('dashboard');
         $usd = $this->asset('usd', 1);
         $btc = $this->asset('btc', 50000);
+        $subMethod = $this->subMethod();
 
-        $this->completedDeposit($wallet, $usd, 100);
+        $this->completedDeposit($wallet, $usd, 100, $subMethod);
         $this->completedDeposit($wallet, $btc, 0.5);
 
         $request = Request::create('/api/v1/dashboard', 'GET');
@@ -150,6 +153,10 @@ class FundsServiceTest extends TestCase
         $this->assertEquals(25100.0, $payload['data']['portfolio_usd']['total_usd']);
         $this->assertArrayHasKey('balances', $payload['data']);
         $this->assertArrayHasKey('asset_balances', $payload['data']);
+        $depositWithSubMethod = collect($payload['data']['recent'])
+            ->firstWhere('sub_method.id', $subMethod->id);
+
+        $this->assertNotNull($depositWithSubMethod);
     }
 
     private function asset(string $name = 'btc', ?float $price = null): Asset
@@ -174,11 +181,29 @@ class FundsServiceTest extends TestCase
         ]);
     }
 
-    private function completedDeposit(Wallet $wallet, Asset $asset, float $amount): Transaction
+    private function subMethod(): SubMethod
+    {
+        $method = Method::forceCreate([
+            'id' => (string) Str::uuid(),
+            'name' => 'Crypto',
+        ]);
+
+        return SubMethod::forceCreate([
+            'id' => (string) Str::uuid(),
+            'method_id' => $method->id,
+            'name' => 'Trust Wallet',
+            'wallet_address' => 'TXn9pQq',
+            'network' => 'TRC20',
+            'is_active' => true,
+        ]);
+    }
+
+    private function completedDeposit(Wallet $wallet, Asset $asset, float $amount, ?SubMethod $subMethod = null): Transaction
     {
         return Transaction::create([
             'wallet_id' => $wallet->id,
             'asset_id' => $asset->id,
+            'sub_method_id' => $subMethod?->id,
             'type' => TransactionType::Deposit->value,
             'amount' => $amount,
             'status' => TransactionStatus::Completed->value,

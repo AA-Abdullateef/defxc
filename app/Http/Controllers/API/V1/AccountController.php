@@ -35,7 +35,11 @@ class AccountController extends Controller
     $assetId = $request->query('asset_id');
 
     // Now these lines will execute perfectly without throwing PHP errors!
-    $query = Transaction::with('asset')->where('wallet_id', $wallet->id)->latest()->take(20);
+    $query = Transaction::with([
+        'asset',
+        'subMethod',
+        'depositPhoto',
+    ])->where('wallet_id', $wallet->id)->latest()->take(20);
     if ($assetId) {
         $query->where('asset_id', $assetId);
     }
