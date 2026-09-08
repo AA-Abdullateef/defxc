@@ -16,12 +16,6 @@
                 <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="Bitcoin">
                 @error('name')<div class="form-error">{{ $message }}</div>@enderror
             </div>
-            <div class="form-group">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                    <input type="checkbox" name="active" value="1" {{ old('active', true) ? 'checked' : '' }}>
-                    <span class="form-label" style="margin:0">Active</span>
-                </label>
-            </div>
             <button type="submit" class="btn btn-primary">Create Method</button>
         </form>
     </div>

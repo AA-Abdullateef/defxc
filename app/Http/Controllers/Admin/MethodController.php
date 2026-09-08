@@ -26,11 +26,10 @@ class MethodController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'   => ['required', 'string', 'max:100', 'unique:methods,name'],
-            'active' => ['nullable', 'boolean'],
+            'name' => ['required', 'string', 'max:100', 'unique:methods,name'],
         ]);
 
-        $method = Method::create([...$data, 'active' => $data['active'] ?? true]);
+        $method = Method::create($data);
 
         AuditLog::record('method.created', auth()->id(), 'admin', 'method', $method->id, null, $method->toArray());
 
@@ -46,8 +45,7 @@ class MethodController extends Controller
     public function update(Request $request, Method $method)
     {
         $data = $request->validate([
-            'name'   => ['required', 'string', 'max:100', 'unique:methods,name,' . $method->id],
-            'active' => ['nullable', 'boolean'],
+            'name' => ['required', 'string', 'max:100', 'unique:methods,name,' . $method->id],
         ]);
 
         $before = $method->toArray();

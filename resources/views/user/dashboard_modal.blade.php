@@ -36,14 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 badgesContainer.innerHTML = '';
                 const assetBalances = Array.isArray(result.data.asset_balances)
                     ? result.data.asset_balances
-                    : (Array.isArray(result.data.assets)
-                        ? result.data.assets.map(asset => ({
-                            asset,
-                            balance: result.data.balances && Object.prototype.hasOwnProperty.call(result.data.balances, asset.id)
-                                ? result.data.balances[asset.id]
-                                : 0
-                        }))
-                        : []);
+                    : [];
 
                 if (assetBalances.length > 0) {
                     assetBalances.forEach(entry => {

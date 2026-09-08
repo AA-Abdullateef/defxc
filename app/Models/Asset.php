@@ -19,14 +19,20 @@ class Asset extends Model
         'price_source_id',
         'current_price',
         'price_updated_at',
+        'swap_charge_rate',
+        'buy_charge_rate',
+        'sell_charge_rate',
     ];
 
     protected function casts(): array
     {
         return [
-            'active' => 'boolean',
-            'current_price' => 'decimal:8',
+            'active'           => 'boolean',
+            'current_price'    => 'decimal:8',
             'price_updated_at' => 'datetime',
+            'swap_charge_rate' => 'decimal:2',
+            'buy_charge_rate'  => 'decimal:2',
+            'sell_charge_rate' => 'decimal:2',
         ];
     }
 

@@ -81,6 +81,7 @@ class TransactionController extends Controller
 
             $completedTransactions[] = $transaction->fresh('wallet.user');
 
+            // Handle the linked leg for transfers (cross-wallet, same asset).
             $relatedTransfer = $transaction->relatedPendingTransferLeg();
 
             if ($relatedTransfer) {
@@ -89,6 +90,16 @@ class TransactionController extends Controller
                 ]);
 
                 $completedTransactions[] = $relatedTransfer->fresh('wallet.user');
+            }
+
+            // Handle the linked legs for swaps (same wallet, cross-asset,
+            // plus the fee leg) — all share meta->swap_id.
+            foreach ($transaction->relatedPendingSwapLegs() as $relatedSwapLeg) {
+                $relatedSwapLeg->update([
+                    'status' => TransactionStatus::Completed->value,
+                ]);
+
+                $completedTransactions[] = $relatedSwapLeg->fresh('wallet.user');
             }
         });
 
@@ -130,6 +141,7 @@ class TransactionController extends Controller
 
             $cancelledTransactions[] = $transaction->fresh('wallet.user');
 
+            // Handle the linked leg for transfers.
             $relatedTransfer = $transaction->relatedPendingTransferLeg();
 
             if ($relatedTransfer) {
@@ -138,6 +150,16 @@ class TransactionController extends Controller
                 ]);
 
                 $cancelledTransactions[] = $relatedTransfer->fresh('wallet.user');
+            }
+
+            // Handle the linked legs for swaps, including the fee leg — this
+            // is what refunds the swap fee when a swap is cancelled.
+            foreach ($transaction->relatedPendingSwapLegs() as $relatedSwapLeg) {
+                $relatedSwapLeg->update([
+                    'status' => TransactionStatus::Cancelled->value,
+                ]);
+
+                $cancelledTransactions[] = $relatedSwapLeg->fresh('wallet.user');
             }
         });
 

@@ -31,13 +31,16 @@ class AssetController extends Controller
         }
 
         $data = $request->validate([
-            'name'   => ['required', 'string', 'max:50', 'unique:assets,name'],
-            'label'  => ['required', 'string', 'max:50'],
-            'icon'   => ['nullable', 'string', 'max:191'],
-            'active' => ['nullable', 'boolean'],
-            'price_source'    => ['nullable', 'in:manual,coingecko,alphavantage,finnhub'],
-            'price_source_id' => ['nullable', 'required_if:price_source,coingecko,alphavantage,finnhub', 'string', 'max:50'],
-            'current_price' => ['nullable', 'numeric', 'gt:0', 'max:9999999999999999.99999999'],
+            'name'             => ['required', 'string', 'max:50', 'unique:assets,name'],
+            'label'            => ['required', 'string', 'max:50'],
+            'icon'             => ['nullable', 'string', 'max:191'],
+            'active'           => ['nullable', 'boolean'],
+            'price_source'     => ['nullable', 'in:manual,coingecko,alphavantage,finnhub'],
+            'price_source_id'  => ['nullable', 'required_if:price_source,coingecko,alphavantage,finnhub', 'string', 'max:50'],
+            'current_price'    => ['nullable', 'numeric', 'gt:0', 'max:9999999999999999.99999999'],
+            'swap_charge_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'buy_charge_rate'  => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'sell_charge_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $asset = Asset::create([...$data, 'active' => $data['active'] ?? true]);
@@ -62,13 +65,16 @@ class AssetController extends Controller
     public function update(Request $request, Asset $asset)
     {
         $data = $request->validate([
-            'name'   => ['required', 'string', 'max:50', 'unique:assets,name,' . $asset->id],
-            'label'  => ['required', 'string', 'max:50'],
-            'icon'   => ['nullable', 'string', 'max:191'],
-            'active' => ['nullable', 'boolean'],
-            'price_source'    => ['nullable', 'in:manual,coingecko,alphavantage,finnhub'],
-            'price_source_id' => ['nullable', 'required_if:price_source,coingecko,alphavantage,finnhub', 'string', 'max:50'],
-            'current_price' => ['nullable', 'numeric', 'gt:0', 'max:9999999999999999.99999999'],
+            'name'             => ['required', 'string', 'max:50', 'unique:assets,name,' . $asset->id],
+            'label'            => ['required', 'string', 'max:50'],
+            'icon'             => ['nullable', 'string', 'max:191'],
+            'active'           => ['nullable', 'boolean'],
+            'price_source'     => ['nullable', 'in:manual,coingecko,alphavantage,finnhub'],
+            'price_source_id'  => ['nullable', 'required_if:price_source,coingecko,alphavantage,finnhub', 'string', 'max:50'],
+            'current_price'    => ['nullable', 'numeric', 'gt:0', 'max:9999999999999999.99999999'],
+            'swap_charge_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'buy_charge_rate'  => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'sell_charge_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $before = $asset->toArray();

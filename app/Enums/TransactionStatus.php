@@ -7,6 +7,7 @@ enum TransactionStatus: string
     case Pending   = 'pending';
     case Completed = 'completed';
     case Cancelled = 'cancelled';
+    case Rejected  = 'rejected';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum TransactionStatus: string
             self::Pending   => 'Pending',
             self::Completed => 'Completed',
             self::Cancelled => 'Cancelled',
+            self::Rejected  => 'Rejected',
         };
     }
 
@@ -23,6 +25,7 @@ enum TransactionStatus: string
             self::Pending   => 'badge-pending',
             self::Completed => 'badge-completed',
             self::Cancelled => 'badge-cancelled',
+            self::Rejected  => 'badge-cancelled',
         };
     }
 
@@ -49,6 +52,23 @@ enum TransactionStatus: string
      * it stays debited through completion.
      */
     public static function transferDebitStatuses(): array
+    {
+        return [self::Pending->value, self::Completed->value];
+    }
+
+    /**
+     * Statuses that lock funds on the debit side for swap outgoing legs and sells.
+     * Matches the withdrawal/transfer pattern — pending locks, completed debits.
+     */
+    public static function swapDebitStatuses(): array
+    {
+        return [self::Pending->value, self::Completed->value];
+    }
+
+    /**
+     * Statuses that lock funds on the debit side for sell transactions.
+     */
+    public static function sellDebitStatuses(): array
     {
         return [self::Pending->value, self::Completed->value];
     }

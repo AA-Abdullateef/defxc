@@ -70,6 +70,13 @@ class TransactionController extends Controller
             if ($relatedTransfer) {
                 $relatedTransfer->update(['status' => TransactionStatus::Cancelled->value]);
             }
+
+            // Cascade to any other pending leg of the same swap (the other
+            // asset leg, plus the fee leg) — otherwise cancelling one leg
+            // would orphan the rest as permanently-pending.
+            foreach ($transaction->relatedPendingSwapLegs() as $relatedSwapLeg) {
+                $relatedSwapLeg->update(['status' => TransactionStatus::Cancelled->value]);
+            }
         });
 
         return $this->success('Transaction cancelled.', [

@@ -5,9 +5,24 @@
 @section('content')
 <div class="stat-grid mb-6">
     <div class="stat-card">
-        <div class="stat-label">Asset Totals</div>
-        <div class="stat-value amber">{{ count($totals) }}</div>
-        <div class="stat-sub">Assets with activity</div>
+        <div class="stat-label">Total Deposits</div>
+        <div class="stat-value amber">${{ number_format($totals['total_deposits'] ?? 0, 2) }}</div>
+        <div class="stat-sub">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Withdrawals</div>
+        <div class="stat-value red">${{ number_format($totals['total_withdrawals'] ?? 0, 2) }}</div>
+        <div class="stat-sub">Pending + completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Transfers</div>
+        <div class="stat-value">${{ number_format($totals['total_transfers'] ?? 0, 2) }}</div>
+        <div class="stat-sub">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value green">{{ number_format($totalUsers) }}</div>
+        <div class="stat-sub">Customers</div>
     </div>
     <div class="stat-card">
         <div class="stat-label">Pending Deposits</div>
@@ -18,11 +33,6 @@
         <div class="stat-label">Pending Withdrawals</div>
         <div class="stat-value red">{{ $pendingWithdrawals }}</div>
         <div class="stat-sub">Awaiting processing</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Total Users</div>
-        <div class="stat-value green">{{ number_format($totalUsers) }}</div>
-        <div class="stat-sub">Customers</div>
     </div>
 </div>
 

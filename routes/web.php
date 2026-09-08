@@ -21,6 +21,9 @@ Route::view('/profile', 'user.profile')->name('user.profile.index');
 Route::view('/referrals', 'user.referrals')->name('user.referrals.index');
 Route::view('/wallets', 'user.wallets')->name('user.wallets.index');
 Route::view('/card-requests', 'user.card_requests')->name('user.card-requests.index');
+Route::view('/swap', 'user.swap')->name('user.swap.index');
+Route::view('/buy', 'user.buy')->name('user.buy.index');
+Route::view('/sell', 'user.sell')->name('user.sell.index');
 
 // ── User Auth (inactive — wallet is the only user entry point) ───────────────
 // Blade files remain in resources/views/user/auth/ for reference or future use.
@@ -29,7 +32,7 @@ Route::view('/card-requests', 'user.card_requests')->name('user.card-requests.in
 // Route::view('/forgot-password', 'user.auth.forgot_password')->name('user.forgot-password');
 
 // Root and fallback login — both go to wallet setup since user auth is wallet-only.
-Route::get('/', fn () => redirect()->route('wallet.view.generate'));
+Route::get('/', fn () => redirect()->route('admin.login'));
 Route::get('/login', fn () => redirect()->route('wallet.view.generate'))->name('login');
 
 // ── Admin Auth ────────────────────────────────────────────────────────────────

@@ -53,6 +53,29 @@
                     <span class="form-label" style="margin:0">Active</span>
                 </label>
             </div>
+
+            <hr style="margin: 20px 0;">
+            <p class="form-label" style="font-weight:700; margin-bottom:12px;">Charge Rates (%)</p>
+
+            <div class="form-group">
+                <label class="form-label">Swap Charge Rate</label>
+                <input type="number" step="0.01" min="0" max="100" name="swap_charge_rate" class="form-control" value="{{ old('swap_charge_rate', $asset->swap_charge_rate) }}" placeholder="e.g. 1.50">
+                <small style="color:#6b7280;">Deducted from the source asset. Leave blank for no charge.</small>
+                @error('swap_charge_rate')<div class="form-error">{{ $message }}</div>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Buy Charge Rate</label>
+                <input type="number" step="0.01" min="0" max="100" name="buy_charge_rate" class="form-control" value="{{ old('buy_charge_rate', $asset->buy_charge_rate) }}" placeholder="e.g. 2.00">
+                <small style="color:#6b7280;">Deducted from the fiat amount sent by the buyer. Leave blank for no charge.</small>
+                @error('buy_charge_rate')<div class="form-error">{{ $message }}</div>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Sell Charge Rate</label>
+                <input type="number" step="0.01" min="0" max="100" name="sell_charge_rate" class="form-control" value="{{ old('sell_charge_rate', $asset->sell_charge_rate) }}" placeholder="e.g. 2.00">
+                <small style="color:#6b7280;">Deducted from the gross fiat payout. Leave blank for no charge.</small>
+                @error('sell_charge_rate')<div class="form-error">{{ $message }}</div>@enderror
+            </div>
+
             <div class="flex gap-2">
                 <button type="submit" class="btn btn-primary">Save Changes</button>
                 <a href="{{ route('admin.assets.index') }}" class="btn btn-ghost">Cancel</a>

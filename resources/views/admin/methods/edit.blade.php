@@ -19,12 +19,6 @@
                     <input type="text" name="name" class="form-control" value="{{ old('name', $method->name) }}">
                     @error('name')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
-                <div class="form-group">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                        <input type="checkbox" name="active" value="1" {{ old('active', $method->active) ? 'checked' : '' }}>
-                        <span class="form-label" style="margin:0">Active</span>
-                    </label>
-                </div>
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary">Save</button>
                     <a href="{{ route('admin.methods.index') }}" class="btn btn-ghost">Cancel</a>

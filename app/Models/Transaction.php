@@ -97,6 +97,13 @@ class Transaction extends Model
         return $this->status === TransactionStatus::Cancelled->value;
     }
 
+    public function isRejected(): bool
+    {
+        return $this->status === TransactionStatus::Rejected->value;
+    }
+
+    // ─── Transfer leg resolution ──────────────────────────────────────────────
+
     public function relatedPendingTransferLeg(): ?self
     {
         if ($this->type !== TransactionType::Transfer->value) {
@@ -164,6 +171,36 @@ class Transaction extends Model
 
         return null;
     }
+
+    // ─── Swap leg resolution ──────────────────────────────────────────────────
+
+    /**
+     * For any pending transaction belonging to a swap (either of the two swap
+     * legs, or the fee leg), find every OTHER pending transaction sharing the
+     * same swap_id — regardless of type/direction — so completing or
+     * cancelling one leg can cascade to all of them.
+     *
+     * The fee leg is recorded as type=Withdrawal (so the ledger naturally
+     * debits it) rather than type=Swap, which is why this can't filter on
+     * `type` the way relatedPendingTransferLeg does — swap_id in meta is the
+     * only thing all three rows share.
+     */
+    public function relatedPendingSwapLegs(): \Illuminate\Support\Collection
+    {
+        $swapId = $this->meta['swap_id'] ?? null;
+
+        if (! $swapId) {
+            return collect();
+        }
+
+        return self::query()
+            ->whereKeyNot($this->id)
+            ->where('status', TransactionStatus::Pending->value)
+            ->where('meta->swap_id', $swapId)
+            ->get();
+    }
+
+    // ─── Labels ───────────────────────────────────────────────────────────────
 
     public function statusLabel(): string
     {

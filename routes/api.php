@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\V1\AccountController;
 use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\CardRequestController;
+use App\Http\Controllers\API\V1\ExchangeController;
 use App\Http\Controllers\API\V1\FundsController;
 use App\Http\Controllers\API\V1\ProfileController;
 use App\Http\Controllers\API\V1\PublicController;
@@ -101,6 +102,17 @@ Route::prefix('v1')->group(function () {
             Route::get('card-requests',                [CardRequestController::class, 'index']);
             Route::post('card-requests',               [CardRequestController::class, 'store']);
             Route::get('card-requests/{cardRequest}',  [CardRequestController::class, 'show']);
+
+            // ── Exchange: Swap, Buy, Sell ─────────────────────────────────────
+            Route::get('swap/options',  [ExchangeController::class, 'swapOptions']);
+            Route::post('swaps',        [ExchangeController::class, 'initiateSwap']);
+
+            Route::get('buy/options',   [ExchangeController::class, 'buyOptions']);
+            Route::post('buys',         [ExchangeController::class, 'initiateBuy']);
+            Route::post('buys/{transaction}/proof', [ExchangeController::class, 'uploadBuyProof']);
+
+            Route::get('sell/options',  [ExchangeController::class, 'sellOptions']);
+            Route::post('sells',        [ExchangeController::class, 'initiateSell']);
 
         });
     });
