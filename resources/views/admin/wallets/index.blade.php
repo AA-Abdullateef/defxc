@@ -17,7 +17,7 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>User</th><th>Fingerprint</th><th>Public Key</th><th>Created</th><th>Actions</th></tr>
+                <tr><th>User</th><th>Wallet ID</th><th>Fingerprint</th><th>Public Key</th><th>Created</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @forelse($wallets as $wallet)
@@ -25,6 +25,9 @@
                     <td>
                         <div style="font-weight:500">{{ $wallet->user?->username ?? 'Unregistered wallet' }}</div>
                         <div class="td-muted">{{ $wallet->user?->email ?? 'Profile not completed' }}</div>
+                    </td>
+                    <td class="td-mono" style="font-size:11px;color:var(--text-faint)">
+                        {{ $wallet->id }}
                     </td>
                     <td class="td-mono" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text-faint)">
                         {{ $wallet->fingerprint }}
@@ -44,7 +47,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="5" style="text-align:center;color:var(--text-faint);padding:32px">No wallet accounts found.</td></tr>
+                <tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:32px">No wallet accounts found.</td></tr>
                 @endforelse
             </tbody>
         </table>

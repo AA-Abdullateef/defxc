@@ -22,6 +22,7 @@ use App\Services\OtpService;
 use App\Services\WalletService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -59,6 +60,8 @@ class AppServiceProvider extends ServiceProvider
 
             return $identity?->wallet;
         });
+
+        Paginator::defaultView('vendor.pagination.admin');
 
         $this->registerEvents();
         $this->registerRateLimiters();

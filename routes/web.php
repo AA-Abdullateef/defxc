@@ -68,6 +68,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Transactions
         Route::get('transactions',                         [Admin\TransactionController::class, 'index'])->name('transactions.index');
+        Route::get('transactions/create',              [Admin\TransactionController::class, 'create'])->name('transactions.create');
+        Route::post('transactions',                    [Admin\TransactionController::class, 'store'])->name('transactions.store');
         Route::get('transactions/{transaction}/show', [Admin\TransactionController::class, 'show'])->name('transactions.show');
         Route::post('transactions/{transaction}/complete', [Admin\TransactionController::class, 'complete'])->name('transactions.complete');
         Route::post('transactions/{transaction}/cancel', [Admin\TransactionController::class, 'cancel'])->name('transactions.cancel');

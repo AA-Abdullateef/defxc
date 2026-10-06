@@ -68,12 +68,6 @@
             </tbody>
         </table>
     </div>
-    @if($users->hasPages())
-    <div style="padding:0 20px">
-        <div class="pagination">
-            {{ $users->withQueryString()->links('vendor.pagination.simple-default') }}
-        </div>
-    </div>
-    @endif
+    <div style="padding:0 20px">{{ $users->withQueryString()->links() }}</div>
 </div>
 @endsection

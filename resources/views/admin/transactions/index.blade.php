@@ -1,6 +1,9 @@
 @extends('layouts.admin')
 @section('title', 'Transactions')
 @section('page-title', 'Transactions')
+@section('topbar-actions')
+    <a href="{{ route('admin.transactions.create') }}" class="btn btn-primary btn-sm">+ New Transaction</a>
+@endsection
 
 @section('content')
 <div class="card">
@@ -9,8 +12,8 @@
         <form method="GET" class="flex gap-2" style="flex-wrap:wrap">
             <select name="type" class="form-control" style="width:auto">
                 <option value="">All Types</option>
-                @foreach(['deposit','withdrawal','transfer'] as $t)
-                    <option value="{{ $t }}" {{ request('type') === $t ? 'selected' : '' }}>{{ ucfirst($t) }}</option>
+                @foreach(\App\Enums\TransactionType::cases() as $t)
+                    <option value="{{ $t->value }}" {{ request('type') === $t->value ? 'selected' : '' }}>{{ $t->label() }}</option>
                 @endforeach
             </select>
             <select name="status" class="form-control" style="width:auto">
@@ -37,7 +40,7 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>User</th><th>Type</th><th>Asset</th><th>Amount</th><th>Sub-Method</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+                <tr><th>Wallet ID</th><th>Type</th><th>Asset</th><th>Amount</th><th>Sub-Method</th><th>Status</th><th>Date</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @forelse($transactions as $tx)
@@ -51,8 +54,10 @@
                 @endphp
                 <tr>
                     <td>
-                        <div style="font-weight:500">{{ $user?->username ?? 'Unregistered wallet' }}</div>
-                        <div class="td-muted">{{ $user?->email ?? $tx->wallet_id }}</div>
+                        <div class="td-mono" style="font-size:11px">
+                            <a href="{{ route('admin.wallets.show', $tx->wallet_id) }}">{{ $tx->wallet_id }}</a>
+                        </div>
+                        <div class="td-muted">{{ $user?->username ?? 'Unregistered' }}</div>
                     </td>
                     <td><span class="badge badge-pending">{{ $tx->type }}</span></td>
                     <td class="td-mono">{{ $tx->asset?->name ?? '—' }}</td>
